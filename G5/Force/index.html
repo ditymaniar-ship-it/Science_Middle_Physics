@@ -1,28 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Science Mission Game</title>
+<title>Science Mission</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
     margin:0;
     font-family:Arial;
-    background:linear-gradient(#87CEEB,#ffffff);
+    background:linear-gradient(#87CEEB,#fff);
+    text-align:center;
 }
 
-/* TOP BAR */
+/* TOP */
 #top{
     background:#222;
     color:#fff;
     padding:10px;
-    text-align:center;
-}
-
-/* START */
-#start{
-    text-align:center;
-    padding:30px;
 }
 
 /* TRACK */
@@ -41,7 +35,6 @@ body{
     left:20px;
     bottom:20px;
     font-size:35px;
-    transform:scaleX(-1);
 }
 
 #finish{
@@ -58,7 +51,7 @@ body{
 #card{
     width:90%;
     max-width:520px;
-    margin:10px auto;
+    margin:auto;
     background:#fff;
     padding:15px;
     border-radius:10px;
@@ -72,199 +65,115 @@ body{
     border-radius:8px;
     cursor:pointer;
 }
-.option:hover{ background:#c8f7c5; }
+.option:hover{background:#c8f7c5;}
 
-/* FINAL MESSAGE */
+/* FINAL */
 #final{
     position:fixed;
-    bottom:40%;
+    top:50%;
     left:50%;
-    transform:translate(-50%,50%);
-    padding:20px 30px;
+    transform:translate(-50%,-50%);
+    background:#fff;
+    padding:25px;
     border-radius:15px;
-    font-size:28px;
-    font-weight:bold;
     display:none;
-    text-align:center;
-    box-shadow:0 0 20px gold,0 0 30px orange;
     z-index:9999;
+    box-shadow:0 0 20px gold;
 }
 
 /* BUTTONS */
-.restart-btn{
+.restart{
     display:block;
     margin:10px auto;
     padding:10px 20px;
-    border:none;
-    border-radius:8px;
     font-size:16px;
     cursor:pointer;
+    border:none;
+    border-radius:8px;
+    background:#4CAF50;
+    color:white;
 }
 
 /* EFFECTS */
-.flash{ animation: flash 0.8s infinite; }
+.flash{animation:flash 1s infinite;}
 @keyframes flash{
 0%{background:#fff;}
 50%{background:#FFD700;}
 100%{background:#fff;}
 }
 
-.shake{ animation: shake 0.4s infinite; }
+.shake{animation:shake 0.3s infinite;}
 @keyframes shake{
 0%{transform:translate(0);}
-25%{transform:translate(-5px,5px);}
-50%{transform:translate(5px,-5px);}
-75%{transform:translate(-5px,5px);}
+25%{transform:translate(-4px,4px);}
+50%{transform:translate(4px,-4px);}
+75%{transform:translate(-4px,4px);}
 100%{transform:translate(0);}
-}
-
-#banner{
-    text-align:center;
-    font-size:24px;
-    color:red;
-    font-weight:bold;
-}
-
-/* FIREWORK CANVAS */
-#fw{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    pointer-events:none;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="fw"></canvas>
-
 <div id="top"></div>
 
-<div id="start">
 <h2>🚗 Mission: Reach Science City</h2>
-<p>
-⏱️ This is a time-bound mission.<br>
-Answer all questions before time runs out.<br>
-🔥 Final challenge decides success.
-</p>
+<p>⏱️ Answer all questions before time ends. Final challenge decides success.</p>
 <button onclick="startGame()">Start Mission</button>
-</div>
 
-<div id="game" style="display:none;">
-<div id="track">
+<div id="track" style="display:none;">
 <div id="finish"></div>
 <div id="car">🚗</div>
 </div>
 
-<div id="card">
-<div id="banner"></div>
+<div id="card" style="display:none;">
 <h3 id="q"></h3>
 <div id="opts"></div>
 <p id="msg"></p>
-</div>
 </div>
 
 <div id="final"></div>
 
 <script>
 
-/* ===== RANDOM GENERATORS (NO REPEAT EVER) ===== */
+/* SCIENCE QUESTION BANK */
+const bank=[
+{q:"Which of the following best describes a force?",o:["It is mass","It is a push or pull","It is energy","It is speed"],a:1},
+{q:"Which force pulls objects towards Earth?",o:["Friction","Magnetic","Gravitational","Electrical"],a:2},
+{q:"What is friction?",o:["A force that speeds up objects","A force that opposes motion","A type of energy","A type of gravity"],a:1},
+{q:"In which direction does friction act?",o:["Same direction","Opposite direction","Upward","Random"],a:1},
+{q:"What is energy?",o:["Ability to do work","Mass","Force","Speed"],a:0},
+{q:"Which form of energy is stored in a stretched rubber band?",o:["Kinetic","Potential","Heat","Light"],a:1},
+{q:"Which energy does a moving car have?",o:["Potential","Kinetic","Sound","Heat"],a:1},
+{q:"What happens when no force acts on a moving object?",o:["Stops","Keeps moving","Disappears","Slows instantly"],a:1},
+{q:"Why do we use brakes in vehicles?",o:["To increase speed","To reduce friction","To stop motion","To add force"],a:2},
+{q:"Kabaddi players rub soil on hands to:",o:["Reduce friction","Increase friction","Cool hands","Clean hands"],a:1},
+{q:"On the Moon, a feather and hammer fall together because:",o:["No gravity","No air resistance","More friction","Less force"],a:1},
+{q:"Which force opposes motion between surfaces?",o:["Gravity","Friction","Magnetism","Electric"],a:1}
+];
 
-function rand(min,max){
-return Math.floor(Math.random()*(max-min+1))+min;
-}
-
-function shuffle(arr){
-for(let i=arr.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1));
-[arr[i],arr[j]]=[arr[j],arr[i]];
-}
-}
-
-/* DYNAMIC QUESTION GENERATOR */
-function generateQuestions(){
-let q=[];
-
-for(let i=0;i<20;i++){
-let type=rand(1,5);
-
-if(type===1){
-let n=rand(5,20);
-q.push({
-q:`Which of the following is a factor of ${n}?`,
-o:[n-1,n,rand(2,10),rand(2,10)],
-a:1
-});
-}
-
-if(type===2){
-let n=rand(2,10);
-q.push({
-q:`Which number is a multiple of ${n}?`,
-o:[n+1,n*2,n*3-1,n*4-2],
-a:1
-});
-}
-
-if(type===3){
-let a=rand(2,10),b=rand(2,10);
-q.push({
-q:`What is the HCF of ${a*2} and ${b*2}?`,
-o:[2,4,6,8],
-a:0
-});
-}
-
-if(type===4){
-let a=rand(2,5),b=rand(3,6);
-q.push({
-q:`What is the LCM of ${a} and ${b}?`,
-o:[a*b,a*b*2,a+b,a*b-1],
-a:0
-});
-}
-
-if(type===5){
-q.push({
-q:"If friction is removed completely, what will happen to a moving object?",
-o:["It will stop","It will not move","It will keep moving unless a force acts","Only heavy objects move"],
-a:2
-});
-}
-
-}
-
-shuffle(q);
-return q.slice(0,10);
-}
-
-/* FINAL CHALLENGE */
+/* FINAL QUESTION */
 const finalQ={
-q:"On the Moon, if a feather and a hammer fall together, what will happen?",
-o:["Hammer falls first","Feather floats","Both fall together","Neither falls"],
+q:"If friction is completely removed, what will happen to a moving object?",
+o:["It will stop quickly","It will not move","It will keep moving unless another force acts","Only heavy objects will move"],
 a:2
 };
 
-/* GAME VARIABLES */
-let questions=[];
-let index=0,score=0,lives=3,time=60,car=20;
-let timer,over=false;
+let questions=[],i=0,score=0,time=60,lives=3,car=20,timer,over=false;
+
+/* RANDOM */
+function shuffle(arr){
+return arr.sort(()=>Math.random()-0.5);
+}
 
 /* START */
 function startGame(){
+document.querySelector("button").style.display="none";
+document.getElementById("track").style.display="block";
+document.getElementById("card").style.display="block";
 
-document.getElementById("start").style.display="none";
-document.getElementById("game").style.display="block";
-document.getElementById("final").style.display="none";
+questions=shuffle([...bank]).slice(0,10);
 
-questions=generateQuestions();
-
-index=0;score=0;lives=3;time=60;car=20;over=false;
-
-update();
 loadQ();
 
 timer=setInterval(()=>{
@@ -276,45 +185,40 @@ if(time<=0) endGame("⏱️ TIME UP! MISSION FAILED");
 
 /* LOAD */
 function loadQ(){
-if(over)return;
-
-if(index>=questions.length){
-document.getElementById("banner").innerHTML="🔥 FINAL CHALLENGE";
+if(i>=questions.length){
 showQ(finalQ,true);
 return;
 }
-
-document.getElementById("banner").innerHTML="";
-showQ(questions[index],false);
+showQ(questions[i],false);
 }
 
 function showQ(q,isFinal){
 document.getElementById("q").innerHTML=q.q;
 let html="";
-q.o.forEach((opt,i)=>{
-html+=`<div class="option" onclick="check(${i},${isFinal})">${opt}</div>`;
+q.o.forEach((opt,index)=>{
+html+=`<div class="option" onclick="check(${index},${isFinal})">${opt}</div>`;
 });
 document.getElementById("opts").innerHTML=html;
 }
 
 /* MOVE */
-function move(step){
+function move(x){
 let max=document.getElementById("track").offsetWidth-90;
-car+=step;
+car+=x;
 if(car<20)car=20;
 if(car>max)car=max;
 document.getElementById("car").style.left=car+"px";
 }
 
 /* CHECK */
-function check(i,isFinal){
+function check(ans,isFinal){
 if(over)return;
 
-let q=isFinal?finalQ:questions[index];
+let q=isFinal?finalQ:questions[i];
 
-if(i===q.a){
+if(ans===q.a){
 score+=10;
-move(35);
+move(30);
 }else{
 lives--;
 move(-15);
@@ -324,72 +228,33 @@ document.getElementById("msg").innerHTML="❌ Correct: "+q.o[q.a];
 update();
 
 setTimeout(()=>{
-if(lives<=0){ endGame("💥 NO LIVES LEFT"); return; }
+if(lives<=0){endGame("💥 NO LIVES LEFT");return;}
 
 if(isFinal){
-endGame(i===q.a?"🏁 MISSION ACCOMPLISHED":"❌ FINAL FAILED");
+endGame(ans===q.a?"🏁 MISSION ACCOMPLISHED":"❌ FINAL FAILED");
 }else{
-index++;
-loadQ();
+i++; loadQ();
 }
 },1000);
 }
 
-/* END GAME */
+/* END */
 function endGame(msg){
 over=true;
 clearInterval(timer);
 
-let final=document.getElementById("final");
-final.style.display="block";
-final.innerHTML=`${msg}<br><br>`;
+let f=document.getElementById("final");
+f.style.display="block";
+f.innerHTML=`<h2>${msg}</h2>`;
+f.className="flash";
 
-final.className="flash";
+if(msg.includes("FAILED")) document.body.classList.add("shake");
 
-if(msg.includes("ACCOMPLISHED")) firework();
-
-document.body.classList.add(msg.includes("FAILED")?"shake":"");
-
-/* 5 RESTART OPTIONS */
-for(let i=1;i<=5;i++){
-final.innerHTML+=`<button class="restart-btn" onclick="location.reload()">Restart ${i}</button>`;
+/* 5 BUTTONS */
+for(let k=1;k<=5;k++){
+f.innerHTML+=`<button class="restart" onclick="location.reload()">Restart ${k}</button>`;
 }
 }
-
-/* FIREWORKS */
-let canvas=document.getElementById("fw");
-let ctx=canvas.getContext("2d");
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-
-let parts=[];
-
-function firework(){
-setInterval(()=>{
-for(let i=0;i<30;i++){
-parts.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height/2,
-vx:(Math.random()-0.5)*5,
-vy:(Math.random()-0.5)*5,
-life:50
-});
-}
-},500);
-}
-
-function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-parts.forEach((p,i)=>{
-p.x+=p.vx;p.y+=p.vy;p.life--;
-ctx.beginPath();
-ctx.arc(p.x,p.y,3,0,Math.PI*2);
-ctx.fill();
-if(p.life<=0)parts.splice(i,1);
-});
-requestAnimationFrame(draw);
-}
-draw();
 
 /* UPDATE */
 function update(){
