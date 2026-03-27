@@ -3,49 +3,41 @@
 <head>
 <title>Science Mission</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background: linear-gradient(to bottom, #87CEEB, #fff);
+  /* Single continuous blue gradient background across screen */
+  background: linear-gradient(#87CEEB,#fff);
   text-align:center;
-  overflow:hidden;
-  height:100vh;
-  position:relative;
 }
 
-/* TOP BAR */
+/* TOP */
 #top{
   background:#222;
   color:#fff;
   padding:10px;
-  position:fixed;
-  width:100%;
-  top:0;
-  left:0;
-  z-index:10;
 }
 
-/* TRACK AREA */
+/* TRACK */
 #track{
-  position:relative;
   width:90%;
   max-width:800px;
   height:120px;
   background:#333;
-  margin:120px auto 20px auto;
+  margin:20px auto;
   border-radius:15px;
+  position:relative;
 }
 
-/* CAR */
 #car{
   position:absolute;
   left:20px;
   bottom:20px;
-  font-size:40px;
+  font-size:35px;
 }
 
-/* FINISH LINE */
 #finish{
   position:absolute;
   right:50px;
@@ -56,49 +48,45 @@ body{
   );
 }
 
-/* QUESTION CARD */
+/* CARD */
 #card{
   width:90%;
-  max-width:600px;
-  margin:20px auto;
-  background:rgba(255,255,255,0.95);
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 0 15px rgba(0,0,0,0.2);
+  max-width:520px;
+  margin:auto;
+  background:#fff;
+  padding:15px;
+  border-radius:10px;
 }
 
 /* OPTIONS */
 .option{
   background:#eee;
-  padding:12px;
+  padding:10px;
   margin:8px;
   border-radius:8px;
   cursor:pointer;
-  transition:0.2s;
 }
 .option:hover{background:#c8f7c5;}
 
-/* FINAL MESSAGE */
+/* FINAL */
 #final{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   background:#fff;
-  padding:30px;
+  padding:25px;
   border-radius:15px;
   display:none;
-  z-index:999;
-  box-shadow:0 0 25px gold;
+  z-index:9999;
+  box-shadow:0 0 20px gold;
   text-align:center;
-  width:80%;
-  max-width:400px;
 }
 
-/* RESTART BUTTON */
+/* BUTTON */
 .restart{
   display:block;
-  margin:15px auto 0 auto;
+  margin:10px auto;
   padding:10px 20px;
   font-size:16px;
   cursor:pointer;
@@ -108,149 +96,163 @@ body{
   color:white;
 }
 
-/* EFFECTS */
+/* EFFECT */
 .flash{animation:flash 1s infinite;}
 @keyframes flash{
-  0%{background:#fff;}
-  50%{background:#FFD700;}
-  100%{background:#fff;}
+0%{background:#fff;}
+50%{background:#FFD700;}
+100%{background:#fff;}
 }
 
 .shake{animation:shake 0.3s infinite;}
 @keyframes shake{
-  0%{transform:translate(0);}
-  25%{transform:translate(-4px,4px);}
-  50%{transform:translate(4px,-4px);}
-  75%{transform:translate(-4px,4px);}
-  100%{transform:translate(0);}
+0%{transform:translate(0);}
+25%{transform:translate(-4px,4px);}
+50%{transform:translate(4px,-4px);}
+75%{transform:translate(-4px,4px);}
+100%{transform:translate(0);}
 }
 </style>
 </head>
+
 <body>
 
-<div id="top">Score: 0 | ❤️ 3 | ⏱️ 60</div>
+<div id="top"></div>
 
-<h2 style="margin-top:80px;">🚗 Mission: Reach Science City</h2>
+<h2> 🚗🚗 Mission: Reach Science City</h2>
 <p>⏱️ Answer all questions before time ends. Final challenge decides success.</p>
-<button id="startBtn" onclick="startGame()">Start Mission</button>
+<button onclick="startGame()">Start Mission</button>
 
 <div id="track" style="display:none;">
-  <div id="finish"></div>
-  <div id="car">🚗</div>
+<div id="finish"></div>
+<div id="car">🚗</div>
 </div>
 
 <div id="card" style="display:none;">
-  <h3 id="q"></h3>
-  <div id="opts"></div>
-  <p id="msg"></p>
+<h3 id="q"></h3>
+<div id="opts"></div>
+<p id="msg"></p>
 </div>
 
 <div id="final"></div>
 
 <script>
-/* QUESTIONS */
+
+/* PURE SCIENCE QUESTIONS (NO MATH) */
 const bank=[
-  {q:"What is a force?",o:["A type of energy","A push or a pull","A kind of motion","A type of mass"],a:1},
-  {q:"Which force pulls objects toward the Earth?",o:["Friction","Magnetic force","Gravitational force","Electric force"],a:2},
-  {q:"What is friction?",o:["A force that helps motion","A force that opposes motion","A type of energy","A type of gravity"],a:1},
-  {q:"In which direction does friction act?",o:["Same direction as motion","Opposite direction to motion","Upward direction","No direction"],a:1},
-  {q:"What is energy?",o:["Ability to do work","Force acting on an object","Mass of an object","Speed of an object"],a:0},
-  {q:"Which type of energy does a moving object have?",o:["Potential energy","Kinetic energy","Heat energy","Light energy"],a:1},
-  {q:"Which type of energy is stored in a stretched spring?",o:["Kinetic energy","Potential energy","Sound energy","Heat energy"],a:1},
-  {q:"Why do we apply brakes in a vehicle?",o:["To increase speed","To decrease friction","To stop motion","To increase energy"],a:2},
-  {q:"Kabaddi players apply soil on their hands to:",o:["Reduce friction","Increase friction","Cool their hands","Clean their hands"],a:1},
-  {q:"What happens when no force acts on a moving object?",o:["It stops immediately","It keeps moving","It disappears","It slows instantly"],a:1},
-  {q:"Which force opposes motion between two surfaces?",o:["Gravity","Friction","Magnetism","Electric force"],a:1},
-  {q:"Why does a ball eventually stop rolling on the ground?",o:["Because of gravity","Because of friction","Because of magnetism","Because of light"],a:1}
+{q:"What is a force?",o:["A type of energy","A push or a pull","A kind of motion","A type of mass"],a:1},
+{q:"Which force pulls objects toward the Earth?",o:["Friction","Magnetic force","Gravitational force","Electric force"],a:2},
+{q:"What is friction?",o:["A force that helps motion","A force that opposes motion","A type of energy","A type of gravity"],a:1},
+{q:"In which direction does friction act?",o:["Same direction as motion","Opposite direction to motion","Upward direction","No direction"],a:1},
+{q:"What is energy?",o:["Ability to do work","Force acting on an object","Mass of an object","Speed of an object"],a:0},
+{q:"Which type of energy does a moving object have?",o:["Potential energy","Kinetic energy","Heat energy","Light energy"],a:1},
+{q:"Which type of energy is stored in a stretched spring?",o:["Kinetic energy","Potential energy","Sound energy","Heat energy"],a:1},
+{q:"Why do we apply brakes in a vehicle?",o:["To increase speed","To decrease friction","To stop motion","To increase energy"],a:2},
+{q:"Kabaddi players apply soil on their hands to:",o:["Reduce friction","Increase friction","Cool their hands","Clean their hands"],a:1},
+{q:"What happens when no force acts on a moving object?",o:["It stops immediately","It keeps moving","It disappears","It slows instantly"],a:1},
+{q:"Which force opposes motion between two surfaces?",o:["Gravity","Friction","Magnetism","Electric force"],a:1},
+{q:"Why does a ball eventually stop rolling on the ground?",o:["Because of gravity","Because of friction","Because of magnetism","Because of light"],a:1}
 ];
 
-const finalQ={
-  q:"On the Moon, a feather and a hammer fall together because:",
-  o:["There is no gravity","There is no air resistance","There is more friction","There is less force"],
-  a:1
-};
+/* FINAL CHALLENGE */
+const finalQ={q:"On the Moon, a feather and a hammer fall together because:",o:["There is no gravity","There is no air resistance","There is more friction","There is less force"],a:1};
 
 let questions=[],i=0,score=0,time=60,lives=3,car=20,timer,over=false;
 
+/* RANDOM */
 function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
 
+/* START */
 function startGame(){
-  document.getElementById("startBtn").style.display="none";
-  document.getElementById("track").style.display="block";
-  document.getElementById("card").style.display="block";
-  questions=shuffle([...bank]).slice(0,10);
-  i=0; score=0; time=60; lives=3; car=20; over=false;
-  loadQ();
-  update();
-  timer=setInterval(()=>{
-    if(over) return;
-    time--;
-    update();
-    if(time<=0) endGame("⏱️ TIME UP! MISSION FAILED");
-  },1000);
+document.querySelector("button").style.display="none";
+document.getElementById("track").style.display="block";
+document.getElementById("card").style.display="block";
+
+questions=shuffle([...bank]).slice(0,10);
+
+loadQ();
+
+timer=setInterval(()=>{
+time--;
+update();
+if(time<=0) endGame("⏱️ TIME UP! MISSION FAILED");
+},1000);
 }
 
+/* LOAD */
 function loadQ(){
-  document.getElementById("msg").innerHTML="";
-  if(i>=questions.length){
-    showQ(finalQ,true);
-    return;
-  }
-  showQ(questions[i],false);
+if(i>=questions.length){
+showQ(finalQ,true);
+return;
+}
+showQ(questions[i],false);
 }
 
 function showQ(q,isFinal){
-  document.getElementById("q").innerHTML=q.q;
-  let html="";
-  q.o.forEach((opt,index)=>{
-    html+=`<div class="option" onclick="check(${index},${isFinal})">${opt}</div>`;
-  });
-  document.getElementById("opts").innerHTML=html;
+document.getElementById("q").innerHTML=q.q;
+let html="";
+q.o.forEach((opt,index)=>{
+html+=`<div class="option" onclick="check(${index},${isFinal})">${opt}</div>`;
+});
+document.getElementById("opts").innerHTML=html;
 }
 
+/* MOVE */
 function move(x){
-  let max=document.getElementById("track").offsetWidth-90;
-  car+=x;
-  if(car<20) car=20;
-  if(car>max) car=max;
-  document.getElementById("car").style.left=car+"px";
+let max=document.getElementById("track").offsetWidth-90;
+car+=x;
+if(car<20)car=20;
+if(car>max)car=max;
+document.getElementById("car").style.left=car+"px";
 }
 
+/* CHECK */
 function check(ans,isFinal){
-  if(over) return;
-  let q=isFinal?finalQ:questions[i];
-  if(ans===q.a){
-    score+=10;
-    move(30);
-  } else{
-    lives--;
-    move(-15);
-    document.getElementById("msg").innerHTML="❌ Correct: "+q.o[q.a];
-  }
-  update();
-  setTimeout(()=>{
-    if(lives<=0){ endGame("💥 NO LIVES LEFT"); return; }
-    if(isFinal){
-      endGame(ans===q.a?"🏁 MISSION ACCOMPLISHED":"❌ FINAL FAILED");
-    } else{
-      i++; loadQ();
-    }
-  },1000);
+if(over)return;
+
+let q=isFinal?finalQ:questions[i];
+
+if(ans===q.a){
+score+=10;
+move(30);
+}else{
+lives--;
+move(-15);
+document.getElementById("msg").innerHTML="❌ Correct: "+q.o[q.a];
 }
 
+update();
+
+setTimeout(()=>{
+if(lives<=0){endGame("💥 NO LIVES LEFT");return;}
+
+if(isFinal){
+endGame(ans===q.a?"🏁 MISSION ACCOMPLISHED":"❌ FINAL FAILED");
+}else{
+i++; loadQ();
+}
+},1000);
+}
+
+/* END */
 function endGame(msg){
-  over=true;
-  clearInterval(timer);
-  let f=document.getElementById("final");
-  f.style.display="block";
-  f.innerHTML=`<h2>${msg}</h2><button class="restart" onclick="location.reload()">Restart Mission</button>`;
-  f.className="flash";
-  if(msg.includes("FAILED")) document.body.classList.add("shake");
+over=true;
+clearInterval(timer);
+
+let f=document.getElementById("final");
+f.style.display="block";
+f.innerHTML=`<h2>${msg}</h2><button class="restart" onclick="location.reload()">Restart</button>`;
+f.className="flash";
+
+if(msg.includes("FAILED")) document.body.classList.add("shake");
+
+/* UPDATE */
+function update(){
+document.getElementById("top").innerHTML=`Score: ${score} | ❤️ ${lives} | ⏱️ ${time}`;
 }
 
-function update(){
-  document.getElementById("top").innerHTML=`Score: ${score} | ❤️ ${lives} | ⏱️ ${time}`;
 }
+
 </script>
 
 </body>
