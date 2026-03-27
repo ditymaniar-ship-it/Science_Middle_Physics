@@ -6,95 +6,95 @@
 
 <style>
 body{
-    margin:0;
-    font-family:Arial;
-    background:linear-gradient(#87CEEB,#fff);
-    text-align:center;
+margin:0;
+font-family:Arial;
+background:linear-gradient(#87CEEB,#fff);
+text-align:center;
 }
 
 /* TOP */
 #top{
-    background:#222;
-    color:#fff;
-    padding:10px;
+background:#222;
+color:#fff;
+padding:10px;
 }
 
 /* TRACK */
 #track{
-    width:90%;
-    max-width:800px;
-    height:120px;
-    background:#333;
-    margin:20px auto;
-    border-radius:15px;
-    position:relative;
+width:90%;
+max-width:800px;
+height:120px;
+background:#333;
+margin:20px auto;
+border-radius:15px;
+position:relative;
 }
 
 #car{
-    position:absolute;
-    left:20px;
-    bottom:20px;
-    font-size:35px;
+position:absolute;
+left:20px;
+bottom:20px;
+font-size:35px;
 }
 
 #finish{
-    position:absolute;
-    right:50px;
-    width:10px;
-    height:100%;
-    background: repeating-linear-gradient(
-        0deg,#fff 0px,#fff 10px,#000 10px,#000 20px
-    );
+position:absolute;
+right:50px;
+width:10px;
+height:100%;
+background: repeating-linear-gradient(
+0deg,#fff 0px,#fff 10px,#000 10px,#000 20px
+);
 }
 
 /* CARD */
 #card{
-    width:90%;
-    max-width:520px;
-    margin:auto;
-    background:#fff;
-    padding:15px;
-    border-radius:10px;
+width:90%;
+max-width:520px;
+margin:auto;
+background:#fff;
+padding:15px;
+border-radius:10px;
 }
 
 /* OPTIONS */
 .option{
-    background:#eee;
-    padding:10px;
-    margin:8px;
-    border-radius:8px;
-    cursor:pointer;
+background:#eee;
+padding:10px;
+margin:8px;
+border-radius:8px;
+cursor:pointer;
 }
 .option:hover{background:#c8f7c5;}
 
 /* FINAL */
 #final{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    background:#fff;
-    padding:25px;
-    border-radius:15px;
-    display:none;
-    z-index:9999;
-    box-shadow:0 0 20px gold;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:#fff;
+padding:25px;
+border-radius:15px;
+display:none;
+z-index:9999;
+box-shadow:0 0 20px gold;
 }
 
-/* BUTTONS */
+/* BUTTON */
 .restart{
-    display:block;
-    margin:10px auto;
-    padding:10px 20px;
-    font-size:16px;
-    cursor:pointer;
-    border:none;
-    border-radius:8px;
-    background:#4CAF50;
-    color:white;
+display:block;
+margin:10px auto;
+padding:10px 20px;
+font-size:16px;
+cursor:pointer;
+border:none;
+border-radius:8px;
+background:#4CAF50;
+color:white;
 }
 
-/* EFFECTS */
+/* EFFECT */
 .flash{animation:flash 1s infinite;}
 @keyframes flash{
 0%{background:#fff;}
@@ -136,27 +136,40 @@ body{
 
 <script>
 
-/* SCIENCE QUESTION BANK */
+/* PURE SCIENCE QUESTIONS (NO MATH) */
 const bank=[
-{q:"Which of the following best describes a force?",o:["It is mass","It is a push or pull","It is energy","It is speed"],a:1},
-{q:"Which force pulls objects towards Earth?",o:["Friction","Magnetic","Gravitational","Electrical"],a:2},
-{q:"What is friction?",o:["A force that speeds up objects","A force that opposes motion","A type of energy","A type of gravity"],a:1},
-{q:"In which direction does friction act?",o:["Same direction","Opposite direction","Upward","Random"],a:1},
-{q:"What is energy?",o:["Ability to do work","Mass","Force","Speed"],a:0},
-{q:"Which form of energy is stored in a stretched rubber band?",o:["Kinetic","Potential","Heat","Light"],a:1},
-{q:"Which energy does a moving car have?",o:["Potential","Kinetic","Sound","Heat"],a:1},
-{q:"What happens when no force acts on a moving object?",o:["Stops","Keeps moving","Disappears","Slows instantly"],a:1},
-{q:"Why do we use brakes in vehicles?",o:["To increase speed","To reduce friction","To stop motion","To add force"],a:2},
-{q:"Kabaddi players rub soil on hands to:",o:["Reduce friction","Increase friction","Cool hands","Clean hands"],a:1},
-{q:"On the Moon, a feather and hammer fall together because:",o:["No gravity","No air resistance","More friction","Less force"],a:1},
-{q:"Which force opposes motion between surfaces?",o:["Gravity","Friction","Magnetism","Electric"],a:1}
+
+{q:"What is a force?",o:["A type of energy","A push or a pull","A kind of motion","A type of mass"],a:1},
+
+{q:"Which force pulls objects toward the Earth?",o:["Friction","Magnetic force","Gravitational force","Electric force"],a:2},
+
+{q:"What is friction?",o:["A force that helps motion","A force that opposes motion","A type of energy","A type of gravity"],a:1},
+
+{q:"In which direction does friction act?",o:["Same direction as motion","Opposite direction to motion","Upward direction","No direction"],a:1},
+
+{q:"What is energy?",o:["Ability to do work","Force acting on an object","Mass of an object","Speed of an object"],a:0},
+
+{q:"Which type of energy does a moving object have?",o:["Potential energy","Kinetic energy","Heat energy","Light energy"],a:1},
+
+{q:"Which type of energy is stored in a stretched spring?",o:["Kinetic energy","Potential energy","Sound energy","Heat energy"],a:1},
+
+{q:"Why do we apply brakes in a vehicle?",o:["To increase speed","To decrease friction","To stop motion","To increase energy"],a:2},
+
+{q:"Kabaddi players apply soil on their hands to:",o:["Reduce friction","Increase friction","Cool their hands","Clean their hands"],a:1},
+
+{q:"What happens when no force acts on a moving object?",o:["It stops immediately","It keeps moving","It disappears","It slows instantly"],a:1},
+
+{q:"Which force opposes motion between two surfaces?",o:["Gravity","Friction","Magnetism","Electric force"],a:1},
+
+{q:"Why does a ball eventually stop rolling on the ground?",o:["Because of gravity","Because of friction","Because of magnetism","Because of light"],a:1}
+
 ];
 
-/* FINAL QUESTION */
+/* FINAL CHALLENGE */
 const finalQ={
-q:"If friction is completely removed, what will happen to a moving object?",
-o:["It will stop quickly","It will not move","It will keep moving unless another force acts","Only heavy objects will move"],
-a:2
+q:"On the Moon, a feather and a hammer fall together because:",
+o:["There is no gravity","There is no air resistance","There is more friction","There is less force"],
+a:1
 };
 
 let questions=[],i=0,score=0,time=60,lives=3,car=20,timer,over=false;
@@ -250,7 +263,7 @@ f.className="flash";
 
 if(msg.includes("FAILED")) document.body.classList.add("shake");
 
-/* 5 BUTTONS */
+/* RESTART BUTTONS */
 for(let k=1;k<=5;k++){
 f.innerHTML+=`<button class="restart" onclick="location.reload()">Restart ${k}</button>`;
 }
