@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Measurement Master: Grade 5</title>
+    <title>Measurement Master</title>
     <style>
         :root {
             --primary: #1e3a8a; --success: #22c55e; --danger: #ef4444; --bg: #0f172a;
@@ -14,130 +14,167 @@
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: white;
         }
 
-        /* 1. START PAGE - Full Screen Fixed Overlay */
-        #start-page {
+        /* 1. START PAGE - Forced High Z-Index Overlay */
+        #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); display: flex; flex-direction: column;
+            background: #0f172a; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 9999;
             text-align: center; padding: 20px;
         }
 
-        /* 2. TIMER UNIT - CSS-based for 100% Visibility */
-        #timer-container {
-            width: 100%; height: 60px; background: #1e293b;
-            display: none; align-items: center; justify-content: center;
-            position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid #334155;
+        /* 2. TOP HUD (Visible during game) */
+        #hud {
+            width: 100%; background: #1e293b; padding: 10px;
+            display: none; flex-direction: column; align-items: center;
+            position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid #334155;
         }
-        #timer-outer {
-            width: 70%; height: 20px; background: #334155;
-            border-radius: 10px; overflow: hidden; margin-left: 15px;
+        #timer-box {
+            display: flex; align-items: center; width: 90%; max-width: 600px; gap: 15px; margin-bottom: 5px;
         }
-        #timer-inner {
-            width: 100%; height: 100%; background: #00ff00;
-            transition: width 0.1s linear, background 0.3s;
+        #clock-digital {
+            font-family: 'Courier New', monospace; font-size: 1.8rem; font-weight: bold;
+            color: #00ff00; min-width: 90px; text-shadow: 0 0 8px #00ff00;
         }
-        #clock-text {
-            font-family: monospace; font-size: 1.5rem; font-weight: bold;
-            color: #00ff00; min-width: 80px; text-align: right;
-        }
+        #bar-outer { flex-grow: 1; height: 15px; background: #334155; border-radius: 10px; overflow: hidden; }
+        #bar-inner { width: 100%; height: 100%; background: #00ff00; transition: width 0.1s linear; }
 
-        /* 3. GAME BOX */
-        #game-container {
-            background: white; color: #1e293b; width: 90%; max-width: 500px;
-            padding: 25px; margin-top: 30px; border-radius: 20px;
-            text-align: center; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* 3. QUIZ CONTAINER */
+        #quiz-container {
+            background: white; color: #1e293b; width: 95%; max-width: 550px;
+            padding: 30px; border-radius: 20px; margin-top: 30px;
+            text-align: center; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-        .q-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; min-height: 50px; }
-        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .q-text { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; line-height: 1.4; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .opt-btn {
-            padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px;
-            background: white; cursor: pointer; font-size: 1rem; font-weight: 500;
+            padding: 16px; border: 2px solid #e2e8f0; border-radius: 15px;
+            background: white; cursor: pointer; font-size: 1.1rem; font-weight: 600; transition: 0.2s;
         }
-        .opt-btn.correct { background: #dcfce7 !important; border-color: var(--success) !important; }
-        .opt-btn.wrong { background: #fee2e2 !important; border-color: var(--danger) !important; }
+        .opt-btn:hover { border-color: #3b82f6; background: #f8fafc; }
+        .correct { background: #dcfce7 !important; border-color: #22c55e !important; }
+        .wrong { background: #fee2e2 !important; border-color: #ef4444 !important; }
 
-        /* REUSABLE BUTTON */
-        .btn-main {
-            padding: 15px 40px; background: var(--success); color: white;
-            border: none; border-radius: 30px; cursor: pointer; font-size: 1.2rem; font-weight: bold;
+        /* BUTTONS */
+        .btn-start {
+            padding: 18px 50px; background: #22c55e; color: white;
+            border: none; border-radius: 40px; cursor: pointer; font-size: 1.4rem; font-weight: bold;
+        }
+
+        #result-screen {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 5000;
         }
     </style>
 </head>
 <body>
 
-<!-- START SCREEN -->
-<div id="start-page">
-    <h1 style="font-size: 2.5rem; color: #38bdf8;">📏 Measurement Master</h1>
-    <p style="font-size: 1.2rem; margin: 20px 0;">30+ Questions | 20 Second Timer | Grade 5</p>
-    <button class="btn-main" onclick="beginGame()">Start Mission</button>
-</div>
-
-<!-- TOP TIMER BAR -->
-<div id="timer-container">
-    <span id="clock-text">20.0s</span>
-    <div id="timer-outer"><div id="timer-inner"></div></div>
-</div>
-
-<!-- MAIN QUIZ AREA -->
-<div id="game-container">
-    <div style="margin-bottom: 10px; font-weight: bold; color: #64748b;">
-        Score: <span id="score">0</span> | Lives: <span id="lives">3</span>
+    <!-- START PAGE -->
+    <div id="start-screen">
+        <h1 style="font-size: 3rem; color: #38bdf8; margin: 0;">📏 Measurement Master</h1>
+        <p style="font-size: 1.3rem; color: #94a3b8; margin: 20px 0;">
+            Grade 5 Mission: Solve 10 questions.<br>
+            Time: <b>20 Seconds</b> per question!
+        </p>
+        <button class="btn-start" onclick="beginMission()">START MISSION</button>
     </div>
-    <p class="q-text" id="q-text">Loading...</p>
-    <div class="options-grid" id="options-box"></div>
-</div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <div id="timer-box">
+            <span id="clock-digital">20.0s</span>
+            <div id="bar-outer"><div id="bar-inner"></div></div>
+        </div>
+        <div style="font-weight: bold; font-size: 1.1rem; color: #cbd5e1;">
+            Score: <span id="score-text">0</span> | Lives: <span id="lives-text">3</span> | Q: <span id="q-count">1</span>/10
+        </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="quiz-container">
+        <p class="q-text" id="q-text">Loading...</p>
+        <div class="options-grid" id="options-list"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="result-screen">
+        <h1 id="res-title" style="font-size: 3rem;"></h1>
+        <p id="res-msg" style="font-size: 1.5rem; margin: 20px 0;"></p>
+        <button class="btn-start" onclick="location.reload()">PLAY AGAIN</button>
+    </div>
 
 <script>
-    const questions = [
+    // 35 Questions Randomized
+    const masterBank = [
         { q: "Standard unit of Length is:", o: ["Gram", "Meter", "Liter", "Second"], a: 1 },
         { q: "1 kilometer is equal to:", o: ["100 m", "1000 m", "10 m", "500 m"], a: 1 },
-        { q: "Thickness of a pencil is best measured in:", o: ["km", "m", "mm", "kg"], a: 2 },
+        { q: "Thickness of a pencil is measured in:", o: ["km", "m", "mm", "kg"], a: 2 },
         { q: "5 meters = ____ centimeters?", o: ["50 cm", "500 cm", "5000 cm", "5 cm"], a: 1 },
-        { q: "Electronic Balance measures:", o: ["Mass", "Length", "Capacity", "Time"], a: 0 },
+        { q: "100 kg is equal to 1 ____:", o: ["Tonne", "Quintal", "Gram", "Meter"], a: 1 },
         { q: "How many grams in 2.5 kg?", o: ["250 g", "2500 g", "25 g", "25000 g"], a: 1 },
+        { q: "Electronic Balance measures:", o: ["Mass", "Length", "Capacity", "Time"], a: 0 },
         { q: "Standard unit for liquid capacity:", o: ["Litre", "Gram", "Meter", "Second"], a: 0 },
         { q: "500 mL + 500 mL makes:", o: ["1000 L", "1 L", "10 L", "5 L"], a: 1 },
         { q: "Seconds in 1 minute:", o: ["10 s", "60 s", "3600 s", "100 s"], a: 1 },
         { q: "Freezing point of water is:", o: ["100°C", "37°C", "0°C", "50°C"], a: 2 },
-        { q: "Distance between cities is in:", o: ["mm", "m", "km", "L"], a: 2 },
-        { q: "Hours in 2 full days:", o: ["24", "48", "72", "12"], a: 1 },
-        { q: "1000 meters make 1 ____:", o: ["cm", "mm", "km", "dm"], a: 2 },
+        { q: "Boiling point of water is:", o: ["0°C", "100°C", "37°C", "212°C"], a: 1 },
+        { q: "Human body temperature in Celsius:", o: ["98.6°C", "37°C", "0°C", "100°C"], a: 1 },
         { q: "Tool for tracking ancient time:", o: ["Sundial", "Compass", "Scale", "Tape"], a: 0 },
-        { q: "Convert 2 Liters to mL:", o: ["200 mL", "2000 mL", "20 mL", "2 mL"], a: 1 }
+        { q: "24-hour time for 4:00 PM:", o: ["04:00", "14:00", "16:00", "20:00"], a: 2 },
+        { q: "10 liters = ____ milliliters?", o: ["100 ml", "1000 ml", "10000 ml", "10 ml"], a: 2 },
+        { q: "A leap year has:", o: ["365 days", "366 days", "364 days", "360 days"], a: 1 },
+        { q: "Distance between cities is in:", o: ["mm", "m", "km", "L"], a: 2 },
+        { q: "Convert 3 Liters to mL:", o: ["300 mL", "3000 mL", "30 mL", "3 mL"], a: 1 },
+        { q: "How many weeks in a year?", o: ["48", "52", "50", "12"], a: 1 },
+        { q: "Tool to measure liquid volume:", o: ["Ruler", "Cylinder", "Scale", "Tape"], a: 1 },
+        { q: "3 kg is equal to:", o: ["30 g", "300 g", "3000 g", "3 g"], a: 2 },
+        { q: "Standard unit for mass:", o: ["Meter", "Gram", "Liter", "Second"], a: 1 },
+        { q: "120 minutes is equal to:", o: ["1 hr", "2 hrs", "3 hrs", "12 hrs"], a: 1 },
+        { q: "Standard unit of Time:", o: ["Hour", "Minute", "Second", "Day"], a: 2 },
+        { q: "50 cm is what part of a meter?", o: ["Quarter", "Half", "Full", "One-third"], a: 1 },
+        { q: "Hours in 2 full days:", o: ["24", "48", "72", "12"], a: 1 },
+        { q: "Convert 2500 mL to Liters:", o: ["25 L", "2.5 L", "0.25 L", "250 L"], a: 1 },
+        { q: "1/2 meter is how many cm?", o: ["25 cm", "50 cm", "75 cm", "100 cm"], a: 1 },
+        { q: "Smallest unit of time:", o: ["Hour", "Minute", "Second", "Day"], a: 2 },
+        { q: "Instrument for body fever:", o: ["Lab", "Clinical", "Barometer", "Ruler"], a: 1 },
+        { q: "1000 mm make 1 ____:", o: ["cm", "m", "km", "dm"], a: 1 },
+        { q: "Normal human temp approx:", o: ["100°C", "0°C", "37°C", "50°C"], a: 2 },
+        { q: "Tool to measure height:", o: ["Tape", "Thermometer", "Scale", "Clock"], a: 0 },
+        { q: "How many seconds in 5 minutes?", o: ["50 s", "300 s", "500 s", "60 s"], a: 1 }
     ];
 
-    let state = { score: 0, lives: 3, idx: 0, pool: [], timeLeft: 20, timer: null };
+    let state = { score: 0, lives: 3, idx: 0, pool: [], timer: null, timeLeft: 20.0 };
 
-    function beginGame() {
-        document.getElementById('start-page').style.display = 'none';
-        document.getElementById('timer-container').style.display = 'flex';
-        document.getElementById('game-container').style.display = 'block';
-        reset();
+    function beginMission() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('hud').style.display = 'flex';
+        document.getElementById('quiz-container').style.display = 'block';
+        resetGame();
     }
 
-    function reset() {
+    function resetGame() {
         state.score = 0; state.lives = 3; state.idx = 0;
-        state.pool = [...questions].sort(() => Math.random() - 0.5).slice(0, 10);
-        updateStats(); loadQ();
+        state.pool = [...masterBank].sort(() => Math.random() - 0.5).slice(0, 10);
+        updateUI();
+        loadQ();
     }
 
-    function startClock() {
+    function startTimer() {
         clearInterval(state.timer);
         state.timeLeft = 20.0;
-        const bar = document.getElementById('timer-inner');
-        const txt = document.getElementById('clock-text');
+        const clock = document.getElementById('clock-digital');
+        const bar = document.getElementById('bar-inner');
         
         state.timer = setInterval(() => {
             state.timeLeft -= 0.1;
+            clock.innerText = state.timeLeft.toFixed(1) + "s";
             bar.style.width = (state.timeLeft / 20 * 100) + "%";
-            txt.innerText = state.timeLeft.toFixed(1) + "s";
-            
+
             if (state.timeLeft <= 5) {
+                clock.style.color = "#ef4444";
                 bar.style.background = "#ef4444";
-                txt.style.color = "#ef4444";
             } else {
+                clock.style.color = "#00ff00";
                 bar.style.background = "#00ff00";
-                txt.style.color = "#00ff00";
             }
 
             if (state.timeLeft <= 0) {
@@ -148,45 +185,55 @@
     }
 
     function loadQ() {
-        const q = state.pool[state.idx];
-        document.getElementById('q-text').innerText = q.q;
-        const box = document.getElementById('options-box');
-        box.innerHTML = '';
-        q.o.forEach((opt, i) => {
+        const data = state.pool[state.idx];
+        document.getElementById('q-text').innerText = data.q;
+        document.getElementById('q-count').innerText = state.idx + 1;
+        const list = document.getElementById('options-list');
+        list.innerHTML = '';
+
+        data.o.forEach((opt, i) => {
             const btn = document.createElement('button');
             btn.className = 'opt-btn';
             btn.innerText = opt;
             btn.onclick = () => handleAns(i, true);
-            box.appendChild(btn);
+            list.appendChild(btn);
         });
-        startClock();
+        startTimer();
     }
 
-    function handleAns(choice, ok) {
+    function handleAns(choice, answered) {
         clearInterval(state.timer);
         const correct = state.pool[state.idx].a;
         const btns = document.querySelectorAll('.opt-btn');
         btns.forEach(b => b.disabled = true);
 
-        if (ok && choice === correct) {
+        if (answered && choice === correct) {
             btns[choice].classList.add('correct');
             state.score += 10;
         } else {
-            if (ok) btns[choice].classList.add('wrong');
+            if (answered) btns[choice].classList.add('wrong');
             btns[correct].classList.add('correct');
             state.lives--;
         }
 
-        updateStats();
+        updateUI();
+
         setTimeout(() => {
-            if (state.lives <= 0 || state.idx >= 9) alert("Game Over! Score: " + state.score);
+            if (state.lives <= 0) endGame("MISSION FAILED 💔", "Practice more!");
+            else if (state.idx >= 9) endGame("MASTER UNLOCKED 🏆", "Perfect job!");
             else { state.idx++; loadQ(); }
         }, 1500);
     }
 
-    function updateStats() {
-        document.getElementById('score').innerText = state.score;
-        document.getElementById('lives').innerText = state.lives;
+    function updateUI() {
+        document.getElementById('score-text').innerText = state.score;
+        document.getElementById('lives-text').innerText = state.lives;
+    }
+
+    function endGame(title, msg) {
+        document.getElementById('result-screen').style.display = 'flex';
+        document.getElementById('res-title').innerText = title;
+        document.getElementById('res-msg').innerText = `${msg} Final Score: ${state.score}/100`;
     }
 </script>
 </body>
