@@ -3,139 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Machines: CBSE Class 5</title>
+    <title>Simple Machines: 2-Row Layout</title>
     <style>
         :root {
             --primary: #4f46e5;
             --success: #16a34a;
-            --danger: #ef4444;
+            --bg: #f0f9ff;
         }
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: #e0f2fe;
+            background: var(--bg);
             display: flex;
             flex-direction: column;
             align-items: center;
             margin: 0;
             padding: 20px;
         }
-        h1 { color: #1e3a8a; margin: 10px 0; }
-        .game-info { margin-bottom: 20px; font-size: 1.2rem; font-weight: bold; }
 
-        /* ITEM BANK */
+        h1 { color: #1e3a8a; margin: 5px 0; }
+        .game-info { margin-bottom: 15px; font-size: 1.2rem; font-weight: bold; color: #334155; }
+
+        /* ITEM BANK (TOP) */
         #item-bank {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 12px;
-            padding: 25px;
+            gap: 10px;
+            padding: 20px;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            width: 90%;
             max-width: 850px;
-            min-height: 120px;
-            border: 2px solid #bfdbfe;
+            min-height: 80px;
+            border: 2px solid #bae6fd;
+            margin-bottom: 20px;
         }
+
         .drag-item {
-            padding: 12px 18px;
-            background: #dbeafe;
-            border: 2px solid #3b82f6;
-            border-radius: 10px;
+            padding: 10px 16px;
+            background: #e0f2fe;
+            border: 2px solid #38bdf8;
+            border-radius: 8px;
             cursor: grab;
             font-weight: 600;
-            user-select: none;
             transition: transform 0.2s;
         }
-        .drag-item:active { cursor: grabbing; transform: scale(1.05); }
+        .drag-item:hover { background: #bae6fd; }
 
-        /* DROP ZONES */
+        /* 2 ROWS x 3 COLUMNS GRID */
         #drop-zones {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(3, 1fr); /* Exactly 3 columns */
+            gap: 20px;
             width: 100%;
-            max-width: 1000px;
-            margin-top: 30px;
+            max-width: 900px;
         }
+
+        /* Responsive: Fallback to 1 col on very small phones */
+        @media (max-width: 600px) {
+            #drop-zones { grid-template-columns: 1fr; }
+        }
+
         .zone {
-            background: #f8fafc;
-            border: 3px dashed #94a3b8;
+            background: white;
+            border: 3px dashed #cbd5e1;
             border-radius: 15px;
             padding: 15px;
-            min-height: 140px;
+            min-height: 150px;
             text-align: center;
-            transition: all 0.3s;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
         }
-        .zone.hover { border-color: var(--primary); background: #e0e7ff; transform: translateY(-5px); }
-        .zone h3 { margin: 0 0 10px 0; color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; }
-        
+        .zone.hover { border-color: var(--primary); background: #eef2ff; }
+        .zone h3 { margin: 0 0 10px 0; color: #1e293b; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+
         .placed-item {
             background: #dcfce7;
             border: 1px solid #22c55e;
-            margin: 8px 0;
-            padding: 8px;
+            margin: 4px 0;
+            padding: 6px;
             border-radius: 6px;
-            font-size: 0.95rem;
-            animation: popIn 0.3s ease-out;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
-        @keyframes popIn { 0% { transform: scale(0.5); } 100% { transform: scale(1); } }
-
-        /* WIN SCREEN */
+        /* OVERLAY */
         #overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(30, 58, 138, 0.95);
+            background: rgba(15, 23, 42, 0.9);
             color: white;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            text-align: center;
         }
         .btn-restart {
-            padding: 15px 40px;
-            background: #22c55e;
+            padding: 12px 35px;
+            background: var(--success);
             color: white;
             border: none;
-            border-radius: 35px;
+            border-radius: 30px;
             cursor: pointer;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-top: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: 0.2s;
+            font-size: 1.2rem;
+            margin-top: 20px;
         }
-        .btn-restart:hover { transform: scale(1.1); background: #16a34a; }
     </style>
 </head>
 <body>
 
     <h1>⚙️ Simple Machine Match-Up</h1>
-    <p>Drag the tools into the correct machine category!</p>
-    <div class="game-info">Solved: <span id="score">0</span> / 10</div>
+    <div class="game-info">Score: <span id="score">0</span> / 10</div>
 
     <div id="item-bank"></div>
 
     <div id="drop-zones">
+        <!-- ROW 1 -->
         <div class="zone" data-type="lever"><h3>Lever</h3></div>
         <div class="zone" data-type="pulley"><h3>Pulley</h3></div>
         <div class="zone" data-type="inclined plane"><h3>Inclined Plane</h3></div>
+        
+        <!-- ROW 2 -->
         <div class="zone" data-type="wheel and axle"><h3>Wheel & Axle</h3></div>
         <div class="zone" data-type="wedge"><h3>Wedge</h3></div>
         <div class="zone" data-type="screw"><h3>Screw</h3></div>
     </div>
 
     <div id="overlay">
-        <h1 style="font-size: 3rem;">Fantastic! 🌟</h1>
-        <p style="font-size: 1.5rem;">You matched all 10 machines correctly.</p>
-        <button class="btn-restart" onclick="startGame()">Play New Round</button>
+        <h1>Excellent Work! 🏆</h1>
+        <p>You categorized 10 items successfully.</p>
+        <button class="btn-restart" onclick="startGame()">Restart Game</button>
     </div>
 
 <script>
-    // Expanded Question Bank (24 items)
     const masterBank = [
         { name: "✂️ Scissors", type: "lever" },
         { name: "⚖️ See-saw", type: "lever" },
@@ -144,106 +147,88 @@
         { name: "🚩 Flagpole", type: "pulley" },
         { name: "🏗️ Crane", type: "pulley" },
         { name: "🪣 Well Bucket", type: "pulley" },
-        { name: "🛶 Window Blind", type: "pulley" },
         { name: "♿ Wheelchair Ramp", type: "inclined plane" },
         { name: "🛝 Playground Slide", type: "inclined plane" },
         { name: "🪜 Ladder", type: "inclined plane" },
-        { name: "🛣️ Mountain Road", type: "inclined plane" },
         { name: "🛞 Doorknob", type: "wheel and axle" },
         { name: "🚲 Bicycle Pedal", type: "wheel and axle" },
         { name: "🎡 Ferris Wheel", type: "wheel and axle" },
-        { name: "🍕 Pizza Cutter", type: "wheel and axle" },
         { name: "🪓 Axe", type: "wedge" },
         { name: "🔪 Kitchen Knife", type: "wedge" },
         { name: "🚪 Door Stopper", type: "wedge" },
-        { name: "🦷 Front Teeth", type: "wedge" },
         { name: "🏺 Jar Lid", type: "screw" },
         { name: "🔩 Metal Bolt", type: "screw" },
-        { name: "💡 Light Bulb Base", type: "screw" },
+        { name: "💡 Light Bulb", type: "screw" },
         { name: "🌀 Drill Bit", type: "screw" }
     ];
 
-    let currentScore = 0;
-    const itemsPerRound = 10;
+    let score = 0;
+    const itemsPerGame = 10;
 
     function startGame() {
-        // Reset State
-        currentScore = 0;
+        score = 0;
         document.getElementById('score').innerText = "0";
         document.getElementById('overlay').style.display = 'none';
         
-        const bankContainer = document.getElementById('item-bank');
-        bankContainer.innerHTML = '';
-        
-        // Clear Drop Zones
-        document.querySelectorAll('.zone').forEach(zone => {
-            const heading = zone.querySelector('h3');
-            zone.innerHTML = '';
-            zone.appendChild(heading);
+        // Reset Zones
+        document.querySelectorAll('.zone').forEach(z => {
+            const h3 = z.querySelector('h3');
+            z.innerHTML = '';
+            z.appendChild(h3);
         });
 
-        // Pick 10 Random Questions
-        const shuffled = [...masterBank].sort(() => Math.random() - 0.5);
-        const gameItems = shuffled.slice(0, itemsPerRound);
+        // Pick 10 Random
+        const bank = document.getElementById('item-bank');
+        bank.innerHTML = '';
+        const shuffled = [...masterBank].sort(() => Math.random() - 0.5).slice(0, itemsPerGame);
 
-        gameItems.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'drag-item';
-            el.innerText = item.name;
-            el.draggable = true;
-            
-            el.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('application/json', JSON.stringify(item));
+        shuffled.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'drag-item';
+            div.innerText = item.name;
+            div.draggable = true;
+            div.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify(item));
             });
-            
-            bankContainer.appendChild(el);
+            bank.appendChild(div);
         });
     }
 
-    // Zone Listeners
     document.querySelectorAll('.zone').forEach(zone => {
         zone.addEventListener('dragover', e => {
             e.preventDefault();
             zone.classList.add('hover');
         });
-
         zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
-
         zone.addEventListener('drop', e => {
             e.preventDefault();
             zone.classList.remove('hover');
-            
-            const data = JSON.parse(e.dataTransfer.getData('application/json'));
-            
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+
             if (data.type === zone.dataset.type) {
-                // Success
-                currentScore++;
-                document.getElementById('score').innerText = currentScore;
+                score++;
+                document.getElementById('score').innerText = score;
                 
-                // Remove from top bank
-                const allDragItems = document.querySelectorAll('.drag-item');
-                allDragItems.forEach(item => {
-                    if (item.innerText === data.name) item.remove();
+                // Remove from bank
+                document.querySelectorAll('.drag-item').forEach(el => {
+                    if(el.innerText === data.name) el.remove();
                 });
 
-                // Add to category
-                const placed = document.createElement('div');
-                placed.className = 'placed-item';
-                placed.innerText = data.name;
-                zone.appendChild(placed);
+                // Add to zone
+                const div = document.createElement('div');
+                div.className = 'placed-item';
+                div.innerText = data.name;
+                zone.appendChild(div);
 
-                if (currentScore === itemsPerRound) {
-                    setTimeout(() => {
-                        document.getElementById('overlay').style.display = 'flex';
-                    }, 500);
+                if (score === itemsPerGame) {
+                    setTimeout(() => document.getElementById('overlay').style.display = 'flex', 500);
                 }
             } else {
-                alert(`Try again! Is ${data.name} really a ${zone.dataset.type}?`);
+                alert("Wrong category! Think about how this tool works.");
             }
         });
     });
 
-    // Start on load
     startGame();
 </script>
 </body>
