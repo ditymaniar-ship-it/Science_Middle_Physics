@@ -8,7 +8,7 @@
 body{
   margin:0;
   font-family:Arial;
-  /* Single continuous blue gradient background across screen */
+  /* Single continuous background */
   background: linear-gradient(#87CEEB,#fff);
   text-align:center;
 }
@@ -25,7 +25,8 @@ body{
   width:90%;
   max-width:800px;
   height:120px;
-  background:#333;
+  /* Continuous solid/gradient blue track */
+  background: linear-gradient(to right, #4682B4, #87CEEB);
   margin:20px auto;
   border-radius:15px;
   position:relative;
@@ -36,6 +37,7 @@ body{
   left:20px;
   bottom:20px;
   font-size:35px;
+  /* Keep car emoji facing right, do NOT flip */
 }
 
 #finish{
@@ -43,9 +45,8 @@ body{
   right:50px;
   width:10px;
   height:100%;
-  background: repeating-linear-gradient(
-    0deg,#fff 0px,#fff 10px,#000 10px,#000 20px
-  );
+  background:#fff;
+  border-left:2px solid #000;
 }
 
 /* CARD */
@@ -119,9 +120,9 @@ body{
 
 <div id="top"></div>
 
-<h2> 🚗🚗 Mission: Reach Science City</h2>
+<h2> 🚗 Mission: Reach Science City</h2>
 <p>⏱️ Answer all questions before time ends. Final challenge decides success.</p>
-<button onclick="startGame()">Start Mission</button>
+<button id="startBtn" onclick="startGame()">Start Mission</button>
 
 <div id="track" style="display:none;">
 <div id="finish"></div>
@@ -138,7 +139,7 @@ body{
 
 <script>
 
-/* PURE SCIENCE QUESTIONS (NO MATH) */
+/* PURE SCIENCE QUESTIONS */
 const bank=[
 {q:"What is a force?",o:["A type of energy","A push or a pull","A kind of motion","A type of mass"],a:1},
 {q:"Which force pulls objects toward the Earth?",o:["Friction","Magnetic force","Gravitational force","Electric force"],a:2},
@@ -164,11 +165,13 @@ function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
 
 /* START */
 function startGame(){
-document.querySelector("button").style.display="none";
+document.getElementById("startBtn").style.display="none";
 document.getElementById("track").style.display="block";
 document.getElementById("card").style.display="block";
 
 questions=shuffle([...bank]).slice(0,10);
+i=0; score=0; time=60; lives=3; car=20; over=false;
+update();
 
 loadQ();
 
@@ -181,6 +184,7 @@ if(time<=0) endGame("⏱️ TIME UP! MISSION FAILED");
 
 /* LOAD */
 function loadQ(){
+document.getElementById("msg").innerHTML="";
 if(i>=questions.length){
 showQ(finalQ,true);
 return;
@@ -241,16 +245,15 @@ clearInterval(timer);
 
 let f=document.getElementById("final");
 f.style.display="block";
-f.innerHTML=`<h2>${msg}</h2><button class="restart" onclick="location.reload()">Restart</button>`;
+f.innerHTML=`<h2>${msg}</h2><button class="restart" onclick="startGame();f.style.display='none';document.getElementById('car').style.left='20px';i=0;score=0;time=60;lives=3;over=false;update();loadQ();">Restart</button>`;
 f.className="flash";
 
 if(msg.includes("FAILED")) document.body.classList.add("shake");
+}
 
 /* UPDATE */
 function update(){
 document.getElementById("top").innerHTML=`Score: ${score} | ❤️ ${lives} | ⏱️ ${time}`;
-}
-
 }
 
 </script>
