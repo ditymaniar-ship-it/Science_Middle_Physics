@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Measurement Master: Time Attack!</title>
+    <title>Measurement Master: Ultimate Time Attack</title>
     <style>
         :root {
             --primary: #1e3a8a; --secondary: #3b82f6;
@@ -15,8 +15,8 @@
         }
         #game-header { width: 100%; background: var(--primary); padding: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         
-        /* TIMER BAR */
-        #timer-container { width: 100%; height: 8px; background: #334155; position: relative; }
+        /* TIMER BAR - Explicitly visible */
+        #timer-container { width: 100%; height: 12px; background: #334155; position: relative; border-bottom: 1px solid #475569; }
         #timer-bar { width: 100%; height: 100%; background: var(--success); transition: width 0.1s linear; }
 
         #stats-bar { display: flex; justify-content: space-around; width: 100%; max-width: 600px; margin: 15px 0; font-weight: bold; font-size: 1.1rem; }
@@ -59,47 +59,42 @@
 
 <script>
     const masterBank = [
-        // Length
+        // 35 Questions for randomized variety
         { q: "Standard unit of Length is:", o: ["Gram", "Meter", "Liter", "Second"], a: 1 },
         { q: "1 kilometer is equal to:", o: ["100 m", "1000 m", "10 m", "500 m"], a: 1 },
-        { q: "Thickness of a mobile phone is best measured in:", o: ["km", "m", "mm", "kg"], a: 2 },
+        { q: "Thickness of a pencil is best measured in:", o: ["km", "m", "mm", "kg"], a: 2 },
         { q: "Tool to measure a playground length:", o: ["Ruler", "Measuring Tape", "Protractor", "Scale"], a: 1 },
         { q: "5 meters = ____ centimeters?", o: ["50 cm", "500 cm", "5000 cm", "5 cm"], a: 1 },
         { q: "Non-standard unit of length:", o: ["Meter", "Inch", "Handspan", "Yard"], a: 2 },
         { q: "1000 millimeters make:", o: ["1 meter", "1 centimeter", "1 kilometer", "10 meters"], a: 0 },
-        // Weight/Mass
-        { q: "Tool for measuring the mass of gold:", o: ["Electronic Balance", "Spring Balance", "Measuring Cup", "Ruler"], a: 0 },
+        { q: "Electronic Balance is used to measure:", o: ["Mass", "Length", "Capacity", "Time"], a: 0 },
         { q: "How many grams in 2.5 kg?", o: ["250 g", "2500 g", "25 g", "25000 g"], a: 1 },
         { q: "Mass of a feather is measured in:", o: ["kg", "mg", "L", "km"], a: 1 },
-        { q: "1 quintal equals:", o: ["10 kg", "100 kg", "1000 kg", "50 kg"], a: 1 },
-        { q: "To weigh a truck, we use:", o: ["Kitchen scale", "Weigh Bridge", "Hand span", "Ruler"], a: 1 },
-        // Capacity
-        { q: "Capacity of a bucket is measured in:", o: ["Meters", "Kilograms", "Liters", "Minutes"], a: 2 },
-        { q: "Amount of ink in a pen is approx:", o: ["2 L", "2 mL", "200 mL", "2 kg"], a: 1 },
+        { q: "100 kg is equal to 1 ____:", o: ["Tonne", "Quintal", "Gram", "Meter"], a: 1 },
+        { q: "To weigh a truck, we use a:", o: ["Kitchen scale", "Weigh Bridge", "Hand span", "Ruler"], a: 1 },
+        { q: "Capacity of a water tank is measured in:", o: ["Meters", "Kilograms", "Liters", "Minutes"], a: 2 },
+        { q: "Standard unit for liquid capacity:", o: ["Litre", "Gram", "Meter", "Second"], a: 0 },
         { q: "500 mL + 500 mL makes:", o: ["1000 L", "1 L", "10 L", "5 L"], a: 1 },
-        { q: "Tool used in labs for liquid volume:", o: ["Ruler", "Measuring Cylinder", "Clock", "Tape"], a: 1 },
+        { q: "Measuring Cylinders are used for:", o: ["Ruler", "Liquid volume", "Clock", "Tape"], a: 1 },
         { q: "10 liters = ____ milliliters?", o: ["100 ml", "1000 ml", "10000 ml", "10 ml"], a: 2 },
-        // Time
         { q: "Standard unit of time:", o: ["Hour", "Minute", "Second", "Day"], a: 2 },
-        { q: "How many seconds in 5 minutes?", o: ["50 s", "300 s", "500 s", "60 s"], a: 1 },
-        { q: "A leap year has how many days?", o: ["365", "366", "364", "360"], a: 1 },
-        { q: "Clock used for racing:", o: ["Wall clock", "Stopwatch", "Sundial", "Alarm clock"], a: 1 },
-        { q: "24 hours make one:", o: ["Week", "Month", "Solar Day", "Year"], a: 2 },
-        { q: "An instrument used in ancient times for time:", o: ["Compass", "Sundial", "Microscope", "Ruler"], a: 1 },
-        // Temperature
-        { q: "Unit of Temperature:", o: ["Meter", "Celsius", "Liter", "Newton"], a: 1 },
-        { q: "Freezing point of water:", o: ["100°C", "37°C", "0°C", "50°C"], a: 2 },
-        { q: "Boiling point of water:", o: ["0°C", "100°C", "37°C", "212°C"], a: 1 },
-        { q: "Normal human body temperature:", o: ["98.6°C", "37°C", "0°C", "100°C"], a: 1 },
-        { q: "Tool to measure fever:", o: ["Lab Thermometer", "Clinical Thermometer", "Barometer", "Ruler"], a: 1 },
-        { q: "Liquid used in traditional thermometers:", o: ["Water", "Oil", "Mercury", "Juice"], a: 2 },
-        // General/Conversions
-        { q: "Which is more: 2 kg or 2000 g?", o: ["2 kg", "2000 g", "They are equal", "None"], a: 2 },
-        { q: "1/2 meter is how many cm?", o: ["25 cm", "50 cm", "75 cm", "100 cm"], a: 1 },
-        { q: "Capacity of a teaspoon is approx:", o: ["5 mL", "5 L", "50 mL", "500 mL"], a: 0 },
-        { q: "3:00 PM in 24-hour clock:", o: ["03:00", "15:00", "13:00", "23:00"], a: 1 },
-        { q: "To measure the width of a book:", o: ["m", "km", "cm", "L"], a: 2 },
-        { q: "How many weeks in a year?", o: ["48", "52", "50", "12"], a: 1 }
+        { q: "Seconds in 10 minutes:", o: ["100 s", "600 s", "3600 s", "60 s"], a: 1 },
+        { q: "A leap year has:", o: ["365 days", "366 days", "364 days", "360 days"], a: 1 },
+        { q: "Precise tool for measuring race time:", o: ["Wall clock", "Stopwatch", "Sundial", "Alarm clock"], a: 1 },
+        { q: "Time is measured using a ____:", o: ["Ruler", "Thermometer", "Clock", "Scale"], a: 2 },
+        { q: "Instrument used in ancient times:", o: ["Compass", "Sundial", "Microscope", "Ruler"], a: 1 },
+        { q: "Standard unit for temperature:", o: ["Meter", "Celsius", "Liter", "Newton"], a: 1 },
+        { q: "Freezing point of water is:", o: ["100°C", "37°C", "0°C", "50°C"], a: 2 },
+        { q: "Boiling point of water is:", o: ["0°C", "100°C", "37°C", "212°C"], a: 1 },
+        { q: "Human body temperature in Celsius:", o: ["98.6°C", "37°C", "0°C", "100°C"], a: 1 },
+        { q: "Tool for measuring body fever:", o: ["Lab Thermometer", "Clinical Thermometer", "Barometer", "Ruler"], a: 1 },
+        { q: "Liquid inside older thermometers:", o: ["Water", "Oil", "Mercury", "Alcohol"], a: 2 },
+        { q: "Which is equal to 2000 g?", o: ["20 kg", "2 kg", "200 kg", "0.2 kg"], a: 1 },
+        { q: "50 cm is what part of a meter?", o: ["Quarter", "Half", "Full", "One-third"], a: 1 },
+        { q: "Unit used to measure medicine volume:", o: ["L", "mL", "kg", "g"], a: 1 },
+        { q: "24-hour time for 4:00 PM:", o: ["04:00", "14:00", "16:00", "20:00"], a: 2 },
+        { q: "Distance between cities is in:", o: ["mm", "m", "km", "L"], a: 2 },
+        { q: "Hours in 2 full days:", o: ["24", "48", "72", "12"], a: 1 }
     ];
 
     let state = { score: 0, lives: 3, currentIdx: 0, shuffledQs: [], timeLeft: 100, timer: null };
@@ -118,12 +113,17 @@
     function startTimer() {
         clearInterval(state.timer);
         state.timeLeft = 100;
+        // Explicitly set the bar back to full width at the start of each question
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = "100%";
+        bar.style.background = "var(--success)";
+
         state.timer = setInterval(() => {
             state.timeLeft -= 1; // Reduces by 1% every 100ms (10 seconds total)
-            document.getElementById('timer-bar').style.width = state.timeLeft + "%";
+            bar.style.width = state.timeLeft + "%";
             
-            if (state.timeLeft <= 30) document.getElementById('timer-bar').style.background = "var(--danger)";
-            else document.getElementById('timer-bar').style.background = "var(--success)";
+            if (state.timeLeft <= 30) bar.style.background = "var(--danger)";
+            else bar.style.background = "var(--success)";
 
             if (state.timeLeft <= 0) {
                 clearInterval(state.timer);
