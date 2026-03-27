@@ -1,261 +1,300 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Science Mission</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Mission: Physics Dash</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+        }
 
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  /* Single continuous background */
-  background: linear-gradient(#87CEEB,#fff);
-  text-align:center;
-}
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB, #e0f2fe);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-/* TOP */
-#top{
-  background:#222;
-  color:#fff;
-  padding:10px;
-}
+        #dashboard {
+            width: 100%;
+            background: #1e293b;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-around;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
 
-/* TRACK */
-#track{
-  width:90%;
-  max-width:800px;
-  height:120px;
-  /* Continuous solid/gradient blue track */
-  background: linear-gradient(to right, #4682B4, #87CEEB);
-  margin:20px auto;
-  border-radius:15px;
-  position:relative;
-}
+        #track-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px 0;
+            position: relative;
+        }
 
-#car{
-  position:absolute;
-  left:20px;
-  bottom:20px;
-  font-size:35px;
-  /* Keep car emoji facing right, do NOT flip */
-}
+        #track {
+            height: 100px;
+            background: #475569;
+            border-bottom: 8px solid #cbd5e1;
+            border-radius: 50px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
 
-#finish{
-  position:absolute;
-  right:50px;
-  width:10px;
-  height:100%;
-  background:#fff;
-  border-left:2px solid #000;
-}
+        #track::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            border-top: 2px dashed rgba(255,255,255,0.5);
+            top: 50%;
+        }
 
-/* CARD */
-#card{
-  width:90%;
-  max-width:520px;
-  margin:auto;
-  background:#fff;
-  padding:15px;
-  border-radius:10px;
-}
+        #car {
+            position: absolute;
+            left: 20px;
+            font-size: 40px;
+            /* FLIP CAR TO FACE RIGHT */
+            transform: scaleX(-1); 
+            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
 
-/* OPTIONS */
-.option{
-  background:#eee;
-  padding:10px;
-  margin:8px;
-  border-radius:8px;
-  cursor:pointer;
-}
-.option:hover{background:#c8f7c5;}
+        #finish-line {
+            position: absolute;
+            right: 40px;
+            height: 100%;
+            width: 20px;
+            background: repeating-conic-gradient(#fff 0% 25%, #000 0% 50%) 50% / 10px 10px;
+        }
 
-/* FINAL */
-#final{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:#fff;
-  padding:25px;
-  border-radius:15px;
-  display:none;
-  z-index:9999;
-  box-shadow:0 0 20px gold;
-  text-align:center;
-}
+        #game-card {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
 
-/* BUTTON */
-.restart{
-  display:block;
-  margin:10px auto;
-  padding:10px 20px;
-  font-size:16px;
-  cursor:pointer;
-  border:none;
-  border-radius:8px;
-  background:#4CAF50;
-  color:white;
-}
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
 
-/* EFFECT */
-.flash{animation:flash 1s infinite;}
-@keyframes flash{
-0%{background:#fff;}
-50%{background:#FFD700;}
-100%{background:#fff;}
-}
+        .option-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--primary);
+        }
 
-.shake{animation:shake 0.3s infinite;}
-@keyframes shake{
-0%{transform:translate(0);}
-25%{transform:translate(-4px,4px);}
-50%{transform:translate(4px,-4px);}
-75%{transform:translate(-4px,4px);}
-100%{transform:translate(0);}
-}
-</style>
+        .option-btn.correct { background: #dcfce7; border-color: var(--success); }
+        .option-btn.wrong { background: #fee2e2; border-color: var(--danger); }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .btn-main {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="top"></div>
-
-<h2> 🚗 Mission: Reach Science City</h2>
-<p>⏱️ Answer all questions before time ends. Final challenge decides success.</p>
-<button id="startBtn" onclick="startGame()">Start Mission</button>
-
-<div id="track" style="display:none;">
-<div id="finish"></div>
-<div id="car">🚗</div>
+<div id="dashboard">
+    <span>🏆 Score: <span id="score">0</span></span>
+    <span>❤️ Lives: <span id="lives">3</span></span>
+    <span>⏱️ Time: <span id="timer">60</span>s</span>
 </div>
 
-<div id="card" style="display:none;">
-<h3 id="q"></h3>
-<div id="opts"></div>
-<p id="msg"></p>
+<div id="track-container">
+    <div id="track">
+        <div id="finish-line"></div>
+        <div id="car">🏎️</div>
+    </div>
 </div>
 
-<div id="final"></div>
+<main id="game-card">
+    <div id="intro-screen">
+        <h1>Science Mission</h1>
+        <p>Race to Science City by solving physics challenges!</p>
+        <button class="btn-main" onclick="initGame()">Start Engine</button>
+    </div>
+
+    <div id="quiz-screen" style="display:none;">
+        <h2 id="question-text">Question goes here?</h2>
+        <div id="options-container"></div>
+        <p id="feedback-msg" style="font-weight: bold;"></p>
+    </div>
+</main>
+
+<div id="overlay">
+    <h1 id="result-title">MISSION OVER</h1>
+    <p id="result-msg"></p>
+    <!-- RESTART BUTTON ALWAYS PRESENT -->
+    <button class="btn-main" onclick="location.reload()">Restart Mission</button>
+</div>
 
 <script>
+    const bank = [
+        {q:"What is a force?", o:["A type of energy","A push or a pull","A kind of motion","A type of mass"], a:1},
+        {q:"Which force pulls objects toward the Earth?", o:["Friction","Magnetic force","Gravitational force","Electric force"], a:2},
+        {q:"What is friction?", o:["A force that helps motion","A force that opposes motion","A type of energy","A type of gravity"], a:1},
+        {q:"In which direction does friction act?", o:["Same direction","Opposite to motion","Upward","No direction"], a:1},
+        {q:"What is energy?", o:["Ability to do work","Force acting on an object","Mass of an object","Speed of an object"], a:0},
+        {q:"Which energy does a moving object have?", o:["Potential","Kinetic","Heat","Light"], a:1},
+        {q:"What's stored in a stretched spring?", o:["Kinetic","Potential","Sound","Heat"], a:1},
+        {q:"Why do we apply brakes?", o:["More speed","Less friction","To stop motion","More energy"], a:2},
+        {q:"Kabaddi players use soil to:", o:["Reduce friction","Increase friction","Cool hands","Clean hands"], a:1},
+        {q:"What stops a rolling ball?", o:["Gravity","Friction","Magnetism","Light"], a:1}
+    ];
 
-/* PURE SCIENCE QUESTIONS */
-const bank=[
-{q:"What is a force?",o:["A type of energy","A push or a pull","A kind of motion","A type of mass"],a:1},
-{q:"Which force pulls objects toward the Earth?",o:["Friction","Magnetic force","Gravitational force","Electric force"],a:2},
-{q:"What is friction?",o:["A force that helps motion","A force that opposes motion","A type of energy","A type of gravity"],a:1},
-{q:"In which direction does friction act?",o:["Same direction as motion","Opposite direction to motion","Upward direction","No direction"],a:1},
-{q:"What is energy?",o:["Ability to do work","Force acting on an object","Mass of an object","Speed of an object"],a:0},
-{q:"Which type of energy does a moving object have?",o:["Potential energy","Kinetic energy","Heat energy","Light energy"],a:1},
-{q:"Which type of energy is stored in a stretched spring?",o:["Kinetic energy","Potential energy","Sound energy","Heat energy"],a:1},
-{q:"Why do we apply brakes in a vehicle?",o:["To increase speed","To decrease friction","To stop motion","To increase energy"],a:2},
-{q:"Kabaddi players apply soil on their hands to:",o:["Reduce friction","Increase friction","Cool their hands","Clean their hands"],a:1},
-{q:"What happens when no force acts on a moving object?",o:["It stops immediately","It keeps moving","It disappears","It slows instantly"],a:1},
-{q:"Which force opposes motion between two surfaces?",o:["Gravity","Friction","Magnetism","Electric force"],a:1},
-{q:"Why does a ball eventually stop rolling on the ground?",o:["Because of gravity","Because of friction","Because of magnetism","Because of light"],a:1}
-];
+    const finalChallenge = {q:"On the Moon, a feather and hammer fall together because:", o:["No gravity","No air resistance","More friction","Less force"], a:1};
 
-/* FINAL CHALLENGE */
-const finalQ={q:"On the Moon, a feather and a hammer fall together because:",o:["There is no gravity","There is no air resistance","There is more friction","There is less force"],a:1};
+    let state = {
+        questions: [],
+        currentIndex: 0,
+        score: 0,
+        lives: 3,
+        timeLeft: 60,
+        carPos: 20,
+        timerInterval: null,
+        isGameOver: false
+    };
 
-let questions=[],i=0,score=0,time=60,lives=3,car=20,timer,over=false;
+    function initGame() {
+        state.questions = [...bank].sort(() => Math.random() - 0.5).slice(0, 8);
+        state.questions.push(finalChallenge); 
+        
+        document.getElementById('intro-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        
+        startTimer();
+        renderQuestion();
+    }
 
-/* RANDOM */
-function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+    function startTimer() {
+        state.timerInterval = setInterval(() => {
+            state.timeLeft--;
+            document.getElementById('timer').innerText = state.timeLeft;
+            if (state.timeLeft <= 0) endMatch("TIME EXPIRED! ⏱️");
+        }, 1000);
+    }
 
-/* START */
-function startGame(){
-document.getElementById("startBtn").style.display="none";
-document.getElementById("track").style.display="block";
-document.getElementById("card").style.display="block";
+    function renderQuestion() {
+        const q = state.questions[state.currentIndex];
+        const container = document.getElementById('options-container');
+        
+        document.getElementById('question-text').innerText = q.q;
+        document.getElementById('feedback-msg').innerText = "";
+        container.innerHTML = '';
 
-questions=shuffle([...bank]).slice(0,10);
-i=0; score=0; time=60; lives=3; car=20; over=false;
-update();
+        q.o.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => handleAnswer(i, btn);
+            container.appendChild(btn);
+        });
+    }
 
-loadQ();
+    function handleAnswer(choice, btn) {
+        if(state.isGameOver) return;
+        
+        const q = state.questions[state.currentIndex];
+        const isCorrect = choice === q.a;
+        const allBtns = document.querySelectorAll('.option-btn');
+        
+        allBtns.forEach(b => b.style.pointerEvents = 'none');
 
-timer=setInterval(()=>{
-time--;
-update();
-if(time<=0) endGame("⏱️ TIME UP! MISSION FAILED");
-},1000);
-}
+        if (isCorrect) {
+            btn.classList.add('correct');
+            state.score += 10;
+            moveCar(60);
+        } else {
+            btn.classList.add('wrong');
+            state.lives--;
+            moveCar(-30);
+            document.getElementById('feedback-msg').innerText = `Careful! Correct: ${q.o[q.a]}`;
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 400);
+        }
 
-/* LOAD */
-function loadQ(){
-document.getElementById("msg").innerHTML="";
-if(i>=questions.length){
-showQ(finalQ,true);
-return;
-}
-showQ(questions[i],false);
-}
+        updateUI();
 
-function showQ(q,isFinal){
-document.getElementById("q").innerHTML=q.q;
-let html="";
-q.o.forEach((opt,index)=>{
-html+=`<div class="option" onclick="check(${index},${isFinal})">${opt}</div>`;
-});
-document.getElementById("opts").innerHTML=html;
-}
+        setTimeout(() => {
+            if (state.lives <= 0) {
+                endMatch("CRASHED! No lives left 💥");
+            } else if (state.currentIndex >= state.questions.length - 1) {
+                endMatch(isCorrect ? "MISSION ACCOMPLISHED! 🏁" : "FINAL GATE CLOSED! ❌");
+            } else {
+                state.currentIndex++;
+                renderQuestion();
+            }
+        }, 1200);
+    }
 
-/* MOVE */
-function move(x){
-let max=document.getElementById("track").offsetWidth-90;
-car+=x;
-if(car<20)car=20;
-if(car>max)car=max;
-document.getElementById("car").style.left=car+"px";
-}
+    function moveCar(dist) {
+        const trackWidth = document.getElementById('track').offsetWidth;
+        state.carPos = Math.max(20, Math.min(trackWidth - 80, state.carPos + dist));
+        document.getElementById('car').style.left = state.carPos + 'px';
+    }
 
-/* CHECK */
-function check(ans,isFinal){
-if(over)return;
+    function updateUI() {
+        document.getElementById('score').innerText = state.score;
+        document.getElementById('lives').innerText = state.lives;
+    }
 
-let q=isFinal?finalQ:questions[i];
-
-if(ans===q.a){
-score+=10;
-move(30);
-}else{
-lives--;
-move(-15);
-document.getElementById("msg").innerHTML="❌ Correct: "+q.o[q.a];
-}
-
-update();
-
-setTimeout(()=>{
-if(lives<=0){endGame("💥 NO LIVES LEFT");return;}
-
-if(isFinal){
-endGame(ans===q.a?"🏁 MISSION ACCOMPLISHED":"❌ FINAL FAILED");
-}else{
-i++; loadQ();
-}
-},1000);
-}
-
-/* END */
-function endGame(msg){
-over=true;
-clearInterval(timer);
-
-let f=document.getElementById("final");
-f.style.display="block";
-f.innerHTML=`<h2>${msg}</h2><button class="restart" onclick="startGame();f.style.display='none';document.getElementById('car').style.left='20px';i=0;score=0;time=60;lives=3;over=false;update();loadQ();">Restart</button>`;
-f.className="flash";
-
-if(msg.includes("FAILED")) document.body.classList.add("shake");
-}
-
-/* UPDATE */
-function update(){
-document.getElementById("top").innerHTML=`Score: ${score} | ❤️ ${lives} | ⏱️ ${time}`;
-}
-
+    function endMatch(msg) {
+        state.isGameOver = true;
+        clearInterval(state.timerInterval);
+        const overlay = document.getElementById('overlay');
+        overlay.style.display = 'flex';
+        document.getElementById('result-title').innerText = msg;
+        document.getElementById('result-msg').innerText = `Final Score: ${state.score}`;
+    }
 </script>
 
 </body>
