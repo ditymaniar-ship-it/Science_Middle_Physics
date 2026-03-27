@@ -3,41 +3,49 @@
 <head>
 <title>Science Mission</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background:linear-gradient(#87CEEB,#fff);
+  background: linear-gradient(to bottom, #87CEEB, #fff);
   text-align:center;
-  overflow-x:hidden;
+  overflow:hidden;
+  height:100vh;
+  position:relative;
 }
 
-/* TOP */
+/* TOP BAR */
 #top{
   background:#222;
   color:#fff;
   padding:10px;
+  position:fixed;
+  width:100%;
+  top:0;
+  left:0;
+  z-index:10;
 }
 
-/* TRACK */
+/* TRACK AREA */
 #track{
+  position:relative;
   width:90%;
   max-width:800px;
   height:120px;
   background:#333;
-  margin:20px auto;
+  margin:120px auto 20px auto;
   border-radius:15px;
-  position:relative;
 }
 
+/* CAR */
 #car{
   position:absolute;
   left:20px;
   bottom:20px;
-  font-size:35px;
+  font-size:40px;
 }
 
+/* FINISH LINE */
 #finish{
   position:absolute;
   right:50px;
@@ -48,46 +56,49 @@ body{
   );
 }
 
-/* CARD */
+/* QUESTION CARD */
 #card{
   width:90%;
-  max-width:520px;
-  margin:auto;
-  background:#fff;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:30px;
+  max-width:600px;
+  margin:20px auto;
+  background:rgba(255,255,255,0.95);
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 0 15px rgba(0,0,0,0.2);
 }
 
 /* OPTIONS */
 .option{
   background:#eee;
-  padding:10px;
+  padding:12px;
   margin:8px;
   border-radius:8px;
   cursor:pointer;
+  transition:0.2s;
 }
 .option:hover{background:#c8f7c5;}
 
-/* FINAL */
+/* FINAL MESSAGE */
 #final{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   background:#fff;
-  padding:25px;
+  padding:30px;
   border-radius:15px;
   display:none;
-  z-index:9999;
-  box-shadow:0 0 20px gold;
+  z-index:999;
+  box-shadow:0 0 25px gold;
   text-align:center;
+  width:80%;
+  max-width:400px;
 }
 
-/* BUTTON */
+/* RESTART BUTTON */
 .restart{
   display:block;
-  margin:10px auto;
+  margin:15px auto 0 auto;
   padding:10px 20px;
   font-size:16px;
   cursor:pointer;
@@ -97,7 +108,7 @@ body{
   color:white;
 }
 
-/* EFFECT */
+/* EFFECTS */
 .flash{animation:flash 1s infinite;}
 @keyframes flash{
   0%{background:#fff;}
@@ -115,14 +126,13 @@ body{
 }
 </style>
 </head>
-
 <body>
 
-<div id="top"></div>
+<div id="top">Score: 0 | ❤️ 3 | ⏱️ 60</div>
 
-<h2> 🚗 Mission: Reach Science City</h2>
+<h2 style="margin-top:80px;">🚗 Mission: Reach Science City</h2>
 <p>⏱️ Answer all questions before time ends. Final challenge decides success.</p>
-<button onclick="startGame()">Start Mission</button>
+<button id="startBtn" onclick="startGame()">Start Mission</button>
 
 <div id="track" style="display:none;">
   <div id="finish"></div>
@@ -138,7 +148,7 @@ body{
 <div id="final"></div>
 
 <script>
-/* PURE SCIENCE QUESTIONS */
+/* QUESTIONS */
 const bank=[
   {q:"What is a force?",o:["A type of energy","A push or a pull","A kind of motion","A type of mass"],a:1},
   {q:"Which force pulls objects toward the Earth?",o:["Friction","Magnetic force","Gravitational force","Electric force"],a:2},
@@ -154,7 +164,6 @@ const bank=[
   {q:"Why does a ball eventually stop rolling on the ground?",o:["Because of gravity","Because of friction","Because of magnetism","Because of light"],a:1}
 ];
 
-/* FINAL CHALLENGE */
 const finalQ={
   q:"On the Moon, a feather and a hammer fall together because:",
   o:["There is no gravity","There is no air resistance","There is more friction","There is less force"],
@@ -163,32 +172,24 @@ const finalQ={
 
 let questions=[],i=0,score=0,time=60,lives=3,car=20,timer,over=false;
 
-/* RANDOM */
-function shuffle(arr){
-  return arr.sort(()=>Math.random()-0.5);
-}
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
 
-/* START */
 function startGame(){
-  document.querySelector("button").style.display="none";
+  document.getElementById("startBtn").style.display="none";
   document.getElementById("track").style.display="block";
   document.getElementById("card").style.display="block";
-
   questions=shuffle([...bank]).slice(0,10);
   i=0; score=0; time=60; lives=3; car=20; over=false;
-
   loadQ();
   update();
-
   timer=setInterval(()=>{
-    if(over)return;
+    if(over) return;
     time--;
     update();
     if(time<=0) endGame("⏱️ TIME UP! MISSION FAILED");
   },1000);
 }
 
-/* LOAD QUESTION */
 function loadQ(){
   document.getElementById("msg").innerHTML="";
   if(i>=questions.length){
@@ -207,7 +208,6 @@ function showQ(q,isFinal){
   document.getElementById("opts").innerHTML=html;
 }
 
-/* MOVE CAR */
 function move(x){
   let max=document.getElementById("track").offsetWidth-90;
   car+=x;
@@ -216,9 +216,8 @@ function move(x){
   document.getElementById("car").style.left=car+"px";
 }
 
-/* CHECK ANSWER */
 function check(ans,isFinal){
-  if(over)return;
+  if(over) return;
   let q=isFinal?finalQ:questions[i];
   if(ans===q.a){
     score+=10;
@@ -228,11 +227,9 @@ function check(ans,isFinal){
     move(-15);
     document.getElementById("msg").innerHTML="❌ Correct: "+q.o[q.a];
   }
-
   update();
-
   setTimeout(()=>{
-    if(lives<=0){endGame("💥 NO LIVES LEFT"); return;}
+    if(lives<=0){ endGame("💥 NO LIVES LEFT"); return; }
     if(isFinal){
       endGame(ans===q.a?"🏁 MISSION ACCOMPLISHED":"❌ FINAL FAILED");
     } else{
@@ -241,20 +238,16 @@ function check(ans,isFinal){
   },1000);
 }
 
-/* END GAME */
 function endGame(msg){
   over=true;
   clearInterval(timer);
-
   let f=document.getElementById("final");
   f.style.display="block";
-  f.innerHTML=`<h2>${msg}</h2><button class="restart" onclick="location.reload()">Restart</button>`;
+  f.innerHTML=`<h2>${msg}</h2><button class="restart" onclick="location.reload()">Restart Mission</button>`;
   f.className="flash";
-
   if(msg.includes("FAILED")) document.body.classList.add("shake");
 }
 
-/* UPDATE TOP INFO */
 function update(){
   document.getElementById("top").innerHTML=`Score: ${score} | ❤️ ${lives} | ⏱️ ${time}`;
 }
