@@ -3,95 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Measurement Master: Grade 5 Science</title>
+    <title>Simple Machines 3x3 Matrix</title>
     <style>
         :root {
-            --primary: #1e3a8a;
-            --secondary: #3b82f6;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --bg: #f0f9ff;
+            --primary: #4f46e5;
+            --success: #16a34a;
+            --sky: #e0f2fe;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
             margin: 0;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
         }
 
-        /* HEADER & STATS */
-        #game-header {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        #stats-bar {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            max-width: 600px;
-            margin: 15px 0;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        /* GAME CARD */
-        #game-container {
+        h1 { color: #1e3a8a; font-size: 1.5rem; margin: 10px 0; text-align: center; }
+        
+        .stats {
             background: white;
-            width: 90%;
-            max-width: 600px;
-            padding: 30px;
+            padding: 8px 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            font-weight: bold;
         }
 
-        .question-text {
-            font-size: 1.3rem;
-            margin-bottom: 25px;
-            color: #1f2937;
-        }
-
-        /* OPTIONS */
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        .option-btn {
+        /* DRAG BANK - Responsive Flex */
+        #item-bank {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            background: var(--sky);
             padding: 15px;
-            border: 2px solid #e5e7eb;
             border-radius: 12px;
+            width: 95%;
+            max-width: 900px;
+            min-height: 60px;
+            margin-bottom: 20px;
+            border: 2px dashed #7dd3fc;
+        }
+
+        .drag-item {
             background: white;
-            cursor: pointer;
-            font-size: 1rem;
+            border: 2px solid #38bdf8;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: grab;
+            font-size: 0.9rem;
+            font-weight: 600;
+            user-select: none;
+            touch-action: none; /* Required for some mobile drag libraries, but basic HTML5 drag is desktop-native */
+        }
+
+        /* 3x2 MATRIX GRID */
+        #drop-zones {
+            display: grid;
+            width: 100%;
+            max-width: 1000px;
+            gap: 15px;
+            /* Default Mobile: 1 or 2 columns */
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+
+        /* Tablet & Desktop: Force 3 Columns */
+        @media (min-width: 768px) {
+            #drop-zones {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .zone {
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            min-height: 140px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             transition: all 0.2s;
-            font-weight: 500;
         }
 
-        .option-btn:hover {
-            border-color: var(--secondary);
-            background: #eff6ff;
+        .zone.hover {
+            border-color: var(--primary);
+            background: #eef2ff;
+            transform: scale(1.02);
         }
 
-        .option-btn.correct { background: #dcfce7; border-color: var(--success); }
-        .option-btn.wrong { background: #fee2e2; border-color: var(--danger); }
+        .zone h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            color: #475569;
+            text-transform: uppercase;
+        }
 
-        /* OVERLAY */
+        .placed-item {
+            background: #dcfce7;
+            border: 1px solid #22c55e;
+            color: #166534;
+            width: 90%;
+            padding: 5px;
+            margin: 3px 0;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } }
+
+        /* WIN OVERLAY */
         #overlay {
-            display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.85);
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -99,133 +131,134 @@
             z-index: 100;
         }
 
-        .btn-restart {
-            padding: 15px 40px;
+        .restart-btn {
             background: var(--success);
             color: white;
             border: none;
-            border-radius: 30px;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 1.2rem;
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-<div id="game-header">
-    <h1>📏 Measurement Master Challenge</h1>
-</div>
+    <h1>⚙️ Simple Machine Match-Up</h1>
+    
+    <div class="stats">Solved: <span id="score">0</span> / 10</div>
 
-<div id="stats-bar">
-    <span>🏆 Score: <span id="score">0</span></span>
-    <span>❤️ Lives: <span id="lives">3</span></span>
-</div>
+    <div id="item-bank"></div>
 
-<div id="game-container">
-    <div id="quiz-box">
-        <p class="question-text" id="q-text">Loading...</p>
-        <div class="options-grid" id="options-box"></div>
+    <div id="drop-zones">
+        <div class="zone" data-type="lever"><h3>Lever</h3></div>
+        <div class="zone" data-type="pulley"><h3>Pulley</h3></div>
+        <div class="zone" data-type="inclined plane"><h3>Inclined Plane</h3></div>
+        <div class="zone" data-type="wheel and axle"><h3>Wheel & Axle</h3></div>
+        <div class="zone" data-type="wedge"><h3>Wedge</h3></div>
+        <div class="zone" data-type="screw"><h3>Screw</h3></div>
     </div>
-</div>
 
-<div id="overlay">
-    <h1 id="result-title">Game Over!</h1>
-    <p id="result-msg"></p>
-    <button class="btn-restart" onclick="initGame()">Try Again</button>
-</div>
+    <div id="overlay">
+        <h2>Great Job, Engineer! 🏆</h2>
+        <p>You categorized all machines correctly.</p>
+        <button class="restart-btn" onclick="startGame()">Play Again</button>
+    </div>
 
-<script>
-    // Questions based on Birla Open Minds Grade 5 Curriculum [0.1.1 - 0.1.5]
-    const questionBank = [
-        { q: "Which tool would you use to measure the height of a family member?", o: ["Ruler", "Measuring Tape", "Handspan", "Thermometer"], a: 1 },
-        { q: "Which of these is a standard unit of length?", o: ["Handspan", "Footstep", "Centimeter", "Cubit"], a: 2 },
-        { q: "How many centimeters are in 1 meter?", o: ["10 cm", "100 cm", "1000 cm", "50 cm"], a: 1 },
-        { q: "Which unit is best for measuring the mass of 5 apples?", o: ["Milliliters", "Kilograms", "Kilometers", "Degrees"], a: 1 },
-        { q: "1 Liter (L) is equal to how many Milliliters (mL)?", o: ["100 mL", "500 mL", "1000 mL", "10 mL"], a: 2 },
-        { q: "Which tool measures the duration of your daily routine?", o: ["Clock", "Beaker", "Weighing Scale", "Measuring Tape"], a: 0 },
-        { q: "What tool does a doctor use to measure human body temperature?", o: ["Laboratory Thermometer", "Measuring Cup", "Clinical Thermometer", "Stopwatch"], a: 2 },
-        { q: "If you don't have a clock, how can you estimate the time of day?", o: ["Feel the air", "Look at your shadow", "Measure your mass", "Count your footsteps"], a: 1 },
-        { q: "What is the correct unit for measuring the capacity of a juice bottle?", o: ["Grams", "Centimeters", "Liters", "Minutes"], a: 2 },
-        { q: "Before using a clinical thermometer, what is an important safety step?", o: ["Boil it", "Wash/Sanitize it", "Heat it with a lamp", "Freeze it"], a: 1 }
-    ];
+    <script>
+        const masterBank = [
+            { name: "✂️ Scissors", type: "lever" },
+            { name: "⚖️ See-saw", type: "lever" },
+            { name: "🔨 Hammer", type: "lever" },
+            { name: "🚩 Flagpole", type: "pulley" },
+            { name: "🏗️ Crane", type: "pulley" },
+            { name: "🪣 Well Bucket", type: "pulley" },
+            { name: "♿ Ramp", type: "inclined plane" },
+            { name: "🛝 Slide", type: "inclined plane" },
+            { name: "🪜 Ladder", type: "inclined plane" },
+            { name: "🛞 Doorknob", type: "wheel and axle" },
+            { name: "🚲 Pedal", type: "wheel and axle" },
+            { name: "🎡 Ferris Wheel", type: "wheel and axle" },
+            { name: "🪓 Axe", type: "wedge" },
+            { name: "🔪 Knife", type: "wedge" },
+            { name: "🚪 Door Stopper", type: "wedge" },
+            { name: "🏺 Jar Lid", type: "screw" },
+            { name: "🔩 Bolt", type: "screw" },
+            { name: "💡 Bulb Base", type: "screw" }
+        ];
 
-    let gameState = {
-        score: 0,
-        lives: 3,
-        currentIdx: 0,
-        shuffledQs: []
-    };
+        let score = 0;
+        const totalToWin = 10;
 
-    function initGame() {
-        gameState = {
-            score: 0,
-            lives: 3,
-            currentIdx: 0,
-            shuffledQs: [...questionBank].sort(() => Math.random() - 0.5)
-        };
-        document.getElementById('overlay').style.display = 'none';
-        updateUI();
-        renderQuestion();
-    }
+        function startGame() {
+            score = 0;
+            document.getElementById('score').innerText = "0";
+            document.getElementById('overlay').style.display = "none";
+            
+            // Clear Categories
+            document.querySelectorAll('.zone').forEach(z => {
+                const title = z.querySelector('h3');
+                z.innerHTML = '';
+                z.appendChild(title);
+            });
 
-    function renderQuestion() {
-        const qData = gameState.shuffledQs[gameState.currentIdx];
-        document.getElementById('q-text').innerText = qData.q;
-        
-        const optionsBox = document.getElementById('options-box');
-        optionsBox.innerHTML = '';
-        
-        qData.o.forEach((opt, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(idx, btn);
-            optionsBox.appendChild(btn);
-        });
-    }
+            // Randomize 10 Items
+            const bankEl = document.getElementById('item-bank');
+            bankEl.innerHTML = '';
+            const picked = [...masterBank].sort(() => 0.5 - Math.random()).slice(0, totalToWin);
 
-    function checkAnswer(choice, btn) {
-        const correctIdx = gameState.shuffledQs[gameState.currentIdx].a;
-        const allBtns = document.querySelectorAll('.option-btn');
-        allBtns.forEach(b => b.disabled = true);
-
-        if (choice === correctIdx) {
-            btn.classList.add('correct');
-            gameState.score += 10;
-        } else {
-            btn.classList.add('wrong');
-            allBtns[correctIdx].classList.add('correct');
-            gameState.lives--;
+            picked.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'drag-item';
+                div.innerText = item.name;
+                div.draggable = true;
+                div.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify(item));
+                });
+                bankEl.appendChild(div);
+            });
         }
 
-        updateUI();
+        // Zone Events
+        document.querySelectorAll('.zone').forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('hover');
+            });
 
-        setTimeout(() => {
-            if (gameState.lives <= 0) {
-                endGame("Better luck next time!");
-            } else if (gameState.currentIdx >= gameState.shuffledQs.length - 1) {
-                endGame("You are a Measurement Master!");
-            } else {
-                gameState.currentIdx++;
-                renderQuestion();
-            }
-        }, 1500);
-    }
+            zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
 
-    function updateUI() {
-        document.getElementById('score').innerText = gameState.score;
-        document.getElementById('lives').innerText = gameState.lives;
-    }
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('hover');
+                const itemData = JSON.parse(e.dataTransfer.getData('text/plain'));
 
-    function endGame(msg) {
-        document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('result-title').innerText = gameState.lives <= 0 ? "Game Over!" : "Mission Accomplished!";
-        document.getElementById('result-msg').innerText = `${msg} Final Score: ${gameState.score}`;
-    }
+                if (itemData.type === zone.dataset.type) {
+                    score++;
+                    document.getElementById('score').innerText = score;
+                    
+                    // Remove from bank
+                    document.querySelectorAll('.drag-item').forEach(el => {
+                        if(el.innerText === itemData.name) el.remove();
+                    });
 
-    initGame();
-</script>
+                    // Add to category
+                    const newItem = document.createElement('div');
+                    newItem.className = 'placed-item';
+                    newItem.innerText = itemData.name;
+                    zone.appendChild(newItem);
 
+                    if (score === totalToWin) {
+                        setTimeout(() => document.getElementById('overlay').style.display = 'flex', 400);
+                    }
+                } else {
+                    alert("Think again! How does that machine help move things?");
+                }
+            });
+        });
+
+        startGame();
+    </script>
 </body>
 </html>
