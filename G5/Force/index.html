@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Science Mission</title>
+<title>Science Mission Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
     margin:0;
     font-family:Arial;
-    background:linear-gradient(#87CEEB,#fff);
-    overflow-x:hidden;
+    background:linear-gradient(#87CEEB,#ffffff);
 }
 
-/* TOP */
+/* TOP BAR */
 #top{
     background:#222;
     color:#fff;
@@ -73,100 +72,74 @@ body{
     border-radius:8px;
     cursor:pointer;
 }
-.option:hover{
-    background:#c8f7c5;
-}
+.option:hover{ background:#c8f7c5; }
 
 /* FINAL MESSAGE */
 #final{
     position:fixed;
-    bottom:30px;
+    bottom:40%;
     left:50%;
-    transform:translateX(-50%);
-    padding:15px 25px;
-    border-radius:12px;
-    font-size:26px;
+    transform:translate(-50%,50%);
+    padding:20px 30px;
+    border-radius:15px;
+    font-size:28px;
     font-weight:bold;
-    z-index:9999;
-    text-align:center;
     display:none;
-    box-shadow:0 0 15px gold,0 0 25px orange;
+    text-align:center;
+    box-shadow:0 0 20px gold,0 0 30px orange;
+    z-index:9999;
 }
 
-/* 🎉 CELEBRATION */
-.flash{
-    animation: celebrate 0.8s infinite;
-}
-@keyframes celebrate{
-    0%{background:#fff;color:#000;}
-    25%{background:#FFD700;}
-    50%{background:#00FF7F;}
-    75%{background:#00BFFF;color:#fff;}
-    100%{background:#fff;color:#000;}
-}
-
-/* BOUNCE */
-.bounce{
-    animation: bounce 0.6s ease infinite alternate;
-}
-@keyframes bounce{
-    from{transform:translateX(-50%) translateY(0);}
-    to{transform:translateX(-50%) translateY(-10px);}
+/* BUTTONS */
+.restart-btn{
+    display:block;
+    margin:10px auto;
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
 }
 
-/* FINAL CHALLENGE */
+/* EFFECTS */
+.flash{ animation: flash 0.8s infinite; }
+@keyframes flash{
+0%{background:#fff;}
+50%{background:#FFD700;}
+100%{background:#fff;}
+}
+
+.shake{ animation: shake 0.4s infinite; }
+@keyframes shake{
+0%{transform:translate(0);}
+25%{transform:translate(-5px,5px);}
+50%{transform:translate(5px,-5px);}
+75%{transform:translate(-5px,5px);}
+100%{transform:translate(0);}
+}
+
 #banner{
-    position:fixed;
-    top:20px;
-    left:50%;
-    transform:translateX(-50%);
+    text-align:center;
     font-size:24px;
     color:red;
     font-weight:bold;
-    z-index:9999;
 }
 
-/* OVERLAY */
-#overlay{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.7);
-    display:none;
-    z-index:9998;
-}
-
-/* SHAKE */
-.shake{
-    animation: shake 0.4s infinite;
-}
-@keyframes shake{
-    0%{transform:translate(0);}
-    25%{transform:translate(-5px,5px);}
-    50%{transform:translate(5px,-5px);}
-    75%{transform:translate(-5px,5px);}
-    100%{transform:translate(0);}
-}
-
-/* FIREWORKS */
-#fireworks{
+/* FIREWORK CANVAS */
+#fw{
     position:fixed;
     top:0;
     left:0;
     width:100%;
     height:100%;
     pointer-events:none;
-    z-index:9997;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="fireworks"></canvas>
-<div id="overlay"></div>
+<canvas id="fw"></canvas>
 
 <div id="top"></div>
 
@@ -175,7 +148,6 @@ body{
 <p>
 ⏱️ This is a time-bound mission.<br>
 Answer all questions before time runs out.<br>
-⚠️ If time finishes, mission fails immediately.<br>
 🔥 Final challenge decides success.
 </p>
 <button onclick="startGame()">Start Mission</button>
@@ -188,243 +160,241 @@ Answer all questions before time runs out.<br>
 </div>
 
 <div id="card">
+<div id="banner"></div>
 <h3 id="q"></h3>
 <div id="opts"></div>
 <p id="msg"></p>
 </div>
-
-<div id="banner"></div>
-<div id="final"></div>
 </div>
+
+<div id="final"></div>
 
 <script>
 
-/* RANDOMIZER */
-function shuffleArray(arr){
+/* ===== RANDOM GENERATORS (NO REPEAT EVER) ===== */
+
+function rand(min,max){
+return Math.floor(Math.random()*(max-min+1))+min;
+}
+
+function shuffle(arr){
 for(let i=arr.length-1;i>0;i--){
 let j=Math.floor(Math.random()*(i+1));
 [arr[i],arr[j]]=[arr[j],arr[i]];
 }
 }
 
-let allQuestions=[
+/* DYNAMIC QUESTION GENERATOR */
+function generateQuestions(){
+let q=[];
 
-{q:"Which of the following statements best describes what a force is?",o:["It is the weight of an object","It is a push or a pull acting on an object","It is the speed of an object","It is heat energy"],a:1},
-{q:"Which force pulls objects toward the Earth?",o:["Magnetic force","Frictional force","Gravitational force","Electrostatic force"],a:2},
-{q:"What is energy?",o:["Ability to do work","Matter","Speed","Mass"],a:0},
-{q:"In which direction does friction act?",o:["Same direction","Opposite direction","Upward","Downward"],a:1},
-{q:"Which is a non-renewable energy source?",o:["Solar","Wind","Fossil fuels","Water"],a:2},
-{q:"What happens when an unbalanced force acts on an object?",o:["Mass changes","Motion changes","Object disappears","Energy ends"],a:1},
-{q:"Why do kabaddi players use soil on their hands?",o:["To reduce friction","To increase friction","To cool hands","For decoration"],a:1},
-{q:"A ball kept at a height has which type of energy?",o:["Kinetic energy","Potential energy","Heat energy","Sound energy"],a:1},
-{q:"What type of energy conversion occurs in a flashlight?",o:["Electrical to light","Chemical to electrical to light","Heat to light","Mechanical to light"],a:1},
-{q:"If a feather and hammer fall on the Moon without air, what happens?",o:["Hammer falls first","Feather floats","Both fall together","Neither falls"],a:2},
+for(let i=0;i<20;i++){
+let type=rand(1,5);
 
-/* extra for randomness */
-{q:"Which force opposes motion between two surfaces in contact?",o:["Gravity","Friction","Magnetism","Electric force"],a:1},
-{q:"Which form of energy is stored in food?",o:["Chemical energy","Light energy","Sound energy","Heat energy"],a:0},
-{q:"What type of force is applied when you push a door?",o:["Pull force","Push force","Magnetic force","Gravitational force"],a:1},
-{q:"Which object has more gravitational pull?",o:["Feather","Stone","Paper","Leaf"],a:1},
-{q:"What happens to a moving object if no force acts on it?",o:["Stops immediately","Changes direction","Keeps moving","Disappears"],a:2}
-];
-
-let questions=[];
-
-let score=0,lives=3,time=60;
-let carPos=20,current=0;
-let timer,gameOver=false;
-
-function finishPos(){
-return document.getElementById("track").offsetWidth - 90;
+if(type===1){
+let n=rand(5,20);
+q.push({
+q:`Which of the following is a factor of ${n}?`,
+o:[n-1,n,rand(2,10),rand(2,10)],
+a:1
+});
 }
+
+if(type===2){
+let n=rand(2,10);
+q.push({
+q:`Which number is a multiple of ${n}?`,
+o:[n+1,n*2,n*3-1,n*4-2],
+a:1
+});
+}
+
+if(type===3){
+let a=rand(2,10),b=rand(2,10);
+q.push({
+q:`What is the HCF of ${a*2} and ${b*2}?`,
+o:[2,4,6,8],
+a:0
+});
+}
+
+if(type===4){
+let a=rand(2,5),b=rand(3,6);
+q.push({
+q:`What is the LCM of ${a} and ${b}?`,
+o:[a*b,a*b*2,a+b,a*b-1],
+a:0
+});
+}
+
+if(type===5){
+q.push({
+q:"If friction is removed completely, what will happen to a moving object?",
+o:["It will stop","It will not move","It will keep moving unless a force acts","Only heavy objects move"],
+a:2
+});
+}
+
+}
+
+shuffle(q);
+return q.slice(0,10);
+}
+
+/* FINAL CHALLENGE */
+const finalQ={
+q:"On the Moon, if a feather and a hammer fall together, what will happen?",
+o:["Hammer falls first","Feather floats","Both fall together","Neither falls"],
+a:2
+};
+
+/* GAME VARIABLES */
+let questions=[];
+let index=0,score=0,lives=3,time=60,car=20;
+let timer,over=false;
 
 /* START */
 function startGame(){
 
 document.getElementById("start").style.display="none";
 document.getElementById("game").style.display="block";
+document.getElementById("final").style.display="none";
 
-/* RANDOM QUESTIONS */
-shuffleArray(allQuestions);
-questions=allQuestions.slice(0,10);
+questions=generateQuestions();
 
-current=0;
+index=0;score=0;lives=3;time=60;car=20;over=false;
 
-loadQ();
 update();
+loadQ();
 
 timer=setInterval(()=>{
 time--;
 update();
-if(time<=0) failGame("⏱️ TIME UP! MISSION FAILED");
+if(time<=0) endGame("⏱️ TIME UP! MISSION FAILED");
 },1000);
 }
 
 /* LOAD */
 function loadQ(){
-if(gameOver) return;
+if(over)return;
 
-if(current>=questions.length){ finalChallenge(); return; }
+if(index>=questions.length){
+document.getElementById("banner").innerHTML="🔥 FINAL CHALLENGE";
+showQ(finalQ,true);
+return;
+}
 
-let q=questions[current];
+document.getElementById("banner").innerHTML="";
+showQ(questions[index],false);
+}
+
+function showQ(q,isFinal){
 document.getElementById("q").innerHTML=q.q;
-
 let html="";
 q.o.forEach((opt,i)=>{
-html+=`<div class="option" onclick="check(${i})">${opt}</div>`;
+html+=`<div class="option" onclick="check(${i},${isFinal})">${opt}</div>`;
 });
 document.getElementById("opts").innerHTML=html;
-document.getElementById("msg").innerHTML="";
 }
 
 /* MOVE */
-function moveCar(step){
-carPos+=step;
-carPos=Math.max(20,Math.min(carPos,finishPos()));
-document.getElementById("car").style.left=carPos+"px";
+function move(step){
+let max=document.getElementById("track").offsetWidth-90;
+car+=step;
+if(car<20)car=20;
+if(car>max)car=max;
+document.getElementById("car").style.left=car+"px";
 }
 
 /* CHECK */
-function check(i){
-if(gameOver) return;
+function check(i,isFinal){
+if(over)return;
 
-let q=questions[current];
+let q=isFinal?finalQ:questions[index];
 
-if(i===q.a){ score+=10; moveCar(35); }
-else{
-lives--; moveCar(-15);
-document.getElementById("msg").innerHTML="❌ Correct answer: "+q.o[q.a];
+if(i===q.a){
+score+=10;
+move(35);
+}else{
+lives--;
+move(-15);
+document.getElementById("msg").innerHTML="❌ Correct: "+q.o[q.a];
 }
 
 update();
 
 setTimeout(()=>{
-current++;
-if(lives<=0){ failGame("💥 NO LIVES LEFT! MISSION FAILED"); return; }
+if(lives<=0){ endGame("💥 NO LIVES LEFT"); return; }
+
+if(isFinal){
+endGame(i===q.a?"🏁 MISSION ACCOMPLISHED":"❌ FINAL FAILED");
+}else{
+index++;
 loadQ();
+}
 },1000);
 }
 
-/* FINAL */
-function finalChallenge(){
-document.getElementById("banner").innerHTML="🔥 FINAL CHALLENGE";
-document.getElementById("q").innerHTML=finalQ.q;
-
-let html="";
-finalQ.o.forEach((opt,i)=>{
-html+=`<div class="option" onclick="finalCheck(${i})">${opt}</div>`;
-});
-document.getElementById("opts").innerHTML=html;
-}
-
-const finalQ={
-q:"If friction is completely removed, what will happen to a moving object?",
-o:["It will stop quickly","It will not move","It will keep moving unless another force acts","Only heavy objects will move"],
-a:2
-};
-
-function finalCheck(i){
-if(gameOver) return;
-
-gameOver=true;
+/* END GAME */
+function endGame(msg){
+over=true;
 clearInterval(timer);
-document.getElementById("banner").innerHTML="";
 
-if(i===finalQ.a) winGame();
-else failGame("❌ FINAL CHALLENGE FAILED");
+let final=document.getElementById("final");
+final.style.display="block";
+final.innerHTML=`${msg}<br><br>`;
+
+final.className="flash";
+
+if(msg.includes("ACCOMPLISHED")) firework();
+
+document.body.classList.add(msg.includes("FAILED")?"shake":"");
+
+/* 5 RESTART OPTIONS */
+for(let i=1;i<=5;i++){
+final.innerHTML+=`<button class="restart-btn" onclick="location.reload()">Restart ${i}</button>`;
+}
 }
 
 /* FIREWORKS */
-let canvas=document.getElementById("fireworks");
+let canvas=document.getElementById("fw");
 let ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
 
-let particles=[];
+let parts=[];
 
-function createFirework(x,y){
-for(let i=0;i<40;i++){
-particles.push({
-x,y,
-sx:(Math.random()-0.5)*6,
-sy:(Math.random()-0.5)*6,
-life:60,
-color:`hsl(${Math.random()*360},100%,50%)`
+function firework(){
+setInterval(()=>{
+for(let i=0;i<30;i++){
+parts.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height/2,
+vx:(Math.random()-0.5)*5,
+vy:(Math.random()-0.5)*5,
+life:50
 });
 }
+},500);
 }
 
-function updateFW(){
+function draw(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
-particles.forEach((p,i)=>{
-p.x+=p.sx; p.y+=p.sy; p.life--;
+parts.forEach((p,i)=>{
+p.x+=p.vx;p.y+=p.vy;p.life--;
 ctx.beginPath();
 ctx.arc(p.x,p.y,3,0,Math.PI*2);
-ctx.fillStyle=p.color;
 ctx.fill();
-if(p.life<=0) particles.splice(i,1);
+if(p.life<=0)parts.splice(i,1);
 });
-requestAnimationFrame(updateFW);
+requestAnimationFrame(draw);
 }
-updateFW();
-
-function launchFireworks(){
-let count=0;
-let burst=setInterval(()=>{
-createFirework(Math.random()*canvas.width,Math.random()*canvas.height/2);
-if(++count>8) clearInterval(burst);
-},300);
-}
-
-/* WIN */
-function winGame(){
-let run=setInterval(()=>{
-carPos+=4;
-
-if(carPos>=finishPos()){
-carPos=finishPos();
-document.getElementById("car").style.left=carPos+"px";
-clearInterval(run);
-
-showFinal("🏁 MISSION ACCOMPLISHED!");
-launchFireworks();
-
-}else{
-document.getElementById("car").style.left=carPos+"px";
-}
-},40);
-}
-
-/* FAIL */
-function failGame(msg){
-gameOver=true;
-clearInterval(timer);
-
-document.getElementById("overlay").style.display="block";
-document.body.classList.add("shake");
-
-showFinal(msg);
-}
-
-/* FINAL DISPLAY */
-function showFinal(message){
-let final=document.getElementById("final");
-final.innerHTML=message;
-final.style.display="block";
-
-final.classList.remove("flash","bounce");
-
-if(message.includes("MISSION ACCOMPLISHED")){
-final.classList.add("flash","bounce");
-}else{
-final.classList.add("flash");
-}
-}
+draw();
 
 /* UPDATE */
 function update(){
 document.getElementById("top").innerHTML=
-"Score: "+score+" | ❤️".repeat(lives)+" | ⏱️ "+time;
+`Score: ${score} | ❤️ ${lives} | ⏱️ ${time}`;
 }
 
 </script>
