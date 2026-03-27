@@ -6,38 +6,35 @@
     <title>Measurement Master: Time Attack</title>
     <style>
         :root {
-            --primary: #1e3a8a; --success: #22c55e; --danger: #ff4757; --bg: #0f172a;
+            --primary: #1e3a8a; --success: #22c55e; --danger: #ef4444; --bg: #0f172a;
         }
         body {
             font-family: 'Segoe UI', sans-serif; background: var(--bg);
             margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: white;
         }
         #game-header { width: 100%; background: var(--primary); padding: 15px; text-align: center; }
-        
-        /* FIXED TIMER BAR - High Visibility */
-        #timer-container { 
-            width: 100%; 
-            height: 20px; 
-            background: #1e293b; 
-            border-bottom: 2px solid #334155;
+
+        /* NATIVE PROGRESS BAR - Guaranteed Visibility */
+        progress {
+            width: 100%;
+            height: 20px;
+            appearance: none;
+            border: none;
             position: sticky;
             top: 0;
-            z-index: 10;
         }
-        #timer-bar { 
-            width: 100%; 
-            height: 100%; 
-            background: #00ff00; /* Bright Neon Green */
+        progress::-webkit-progress-bar { background-color: #1e293b; }
+        progress::-webkit-progress-value { 
+            background-color: #00ff00; 
             box-shadow: 0 0 10px #00ff00;
             transition: width 0.1s linear;
         }
+        /* Color change for low time */
+        .low-time::-webkit-progress-value { background-color: #ff4757; box-shadow: 0 0 10px #ff4757; }
 
         #stats-bar { display: flex; justify-content: space-around; width: 100%; max-width: 600px; margin: 15px 0; font-weight: bold; font-size: 1.2rem; }
-        
         #game-container { background: white; color: #1e293b; width: 90%; max-width: 600px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-        
         .question-text { font-size: 1.3rem; margin-bottom: 20px; font-weight: 600; min-height: 50px; }
-        
         .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
         .option-btn { padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; cursor: pointer; font-size: 1.1rem; transition: 0.2s; font-weight: 500; }
         .option-btn:hover:not(:disabled) { border-color: #3b82f6; background: #f8fafc; }
@@ -50,13 +47,13 @@
 </head>
 <body>
 
-<div id="timer-container"><div id="timer-bar"></div></div>
-<div id="game-header"><h1>⏱️ Measurement Challenge</h1></div>
+<progress id="timer-bar" value="100" max="100"></progress>
+<div id="game-header"><h1>📏 Measurement Challenge</h1></div>
 
 <div id="stats-bar">
     <span>🏆 Score: <span id="score">0</span></span>
     <span>❤️ Lives: <span id="lives">3</span></span>
-    <span>📝 Q: <span id="progress">1</span>/10</span>
+    <span>📝 Q: <span id="progress-count">1</span>/10</span>
 </div>
 
 <div id="game-container">
@@ -112,46 +109,38 @@
     let state = { score: 0, lives: 3, currentIdx: 0, shuffledQs: [], timeLeft: 100, timer: null };
 
     function initGame() {
-        state.score = 0;
-        state.lives = 3;
-        state.currentIdx = 0;
+        state.score = 0; state.lives = 3; state.currentIdx = 0;
         state.shuffledQs = [...masterBank].sort(() => Math.random() - 0.5).slice(0, 10);
         document.getElementById('overlay').style.display = 'none';
-        updateUI();
-        renderQuestion();
+        updateUI(); renderQuestion();
     }
 
     function startTimer() {
         clearInterval(state.timer);
         state.timeLeft = 100;
         const bar = document.getElementById('timer-bar');
-        bar.style.width = "100%";
-        bar.style.background = "#00ff00";
+        bar.value = 100;
+        bar.classList.remove('low-time');
 
         state.timer = setInterval(() => {
             state.timeLeft -= 1;
-            bar.style.width = state.timeLeft + "%";
+            bar.value = state.timeLeft;
 
-            if (state.timeLeft <= 30) {
-                bar.style.background = "#ff4757";
-                bar.style.boxShadow = "0 0 10px #ff4757";
-            }
+            if (state.timeLeft <= 30) bar.classList.add('low-time');
 
             if (state.timeLeft <= 0) {
                 clearInterval(state.timer);
-                handleAction(null, false); // Time out
+                handleAction(null, false);
             }
-        }, 100); // 100ms * 100 = 10 seconds total
+        }, 100); 
     }
 
     function renderQuestion() {
         const qData = state.shuffledQs[state.currentIdx];
         document.getElementById('q-text').innerText = qData.q;
-        document.getElementById('progress').innerText = state.currentIdx + 1;
-        
+        document.getElementById('progress-count').innerText = state.currentIdx + 1;
         const box = document.getElementById('options-box');
         box.innerHTML = '';
-        
         qData.o.forEach((opt, idx) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
@@ -178,16 +167,10 @@
         }
 
         updateUI();
-
         setTimeout(() => {
-            if (state.lives <= 0) {
-                endGame("GAME OVER! 💔");
-            } else if (state.currentIdx >= 9) {
-                endGame("MEASUREMENT MASTER! 🏆");
-            } else {
-                state.currentIdx++;
-                renderQuestion();
-            }
+            if (state.lives <= 0) endGame("GAME OVER! 💔");
+            else if (state.currentIdx >= 9) endGame("MEASUREMENT MASTER! 🏆");
+            else { state.currentIdx++; renderQuestion(); }
         }, 1500);
     }
 
@@ -202,7 +185,6 @@
         document.getElementById('result-msg').innerText = `Your Score: ${state.score}/100`;
     }
 
-    // Start the game for the first time
     initGame();
 </script>
 </body>
