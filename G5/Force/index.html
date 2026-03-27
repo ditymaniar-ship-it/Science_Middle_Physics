@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Science Mission</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(#87CEEB,#fff);
+    overflow-x:hidden;
+}
+
+/* TOP BAR */
+#top{
+    background:#222;
+    color:#fff;
+    padding:10px;
+    text-align:center;
+}
+
+/* START */
+#start{
+    text-align:center;
+    padding:30px;
+}
+
+/* TRACK */
+#track{
+    width:90%;
+    max-width:800px;
+    height:120px;
+    background:#333;
+    margin:20px auto;
+    border-radius:15px;
+    position:relative;
+}
+
+#car{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    font-size:35px;
+    transform:scaleX(-1);
+}
+
+#finish{
+    position:absolute;
+    right:50px;
+    width:10px;
+    height:100%;
+    background: repeating-linear-gradient(
+        0deg,#fff 0px,#fff 10px,#000 10px,#000 20px
+    );
+}
+
+/* CARD */
+#card{
+    width:90%;
+    max-width:520px;
+    margin:10px auto;
+    background:#fff;
+    padding:15px;
+    border-radius:10px;
+}
+
+/* OPTIONS */
+.option{
+    background:#eee;
+    padding:10px;
+    margin:8px;
+    border-radius:8px;
+    cursor:pointer;
+}
+.option:hover{
+    background:#c8f7c5;
+}
+
+/* FINAL MESSAGE */
+#final{
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:15px 25px;
+    border-radius:12px;
+    font-size:26px;
+    font-weight:bold;
+    z-index:9999;
+    text-align:center;
+    display:none;
+    box-shadow:0 0 15px gold,0 0 25px orange;
+}
+
+/* 🎉 CELEBRATION */
+.flash{
+    animation: celebrate 0.8s infinite;
+}
+@keyframes celebrate{
+    0%{background:#fff;color:#000; transform:scale(1);}
+    25%{background:#FFD700;color:#000; transform:scale(1.05);}
+    50%{background:#00FF7F;color:#000; transform:scale(1.1);}
+    75%{background:#00BFFF;color:#fff; transform:scale(1.05);}
+    100%{background:#fff;color:#000; transform:scale(1);}
+}
+
+/* BOUNCE */
+.bounce{
+    animation: bounce 0.6s ease infinite alternate;
+}
+@keyframes bounce{
+    from{transform:translateX(-50%) translateY(0);}
+    to{transform:translateX(-50%) translateY(-10px);}
+}
+
+/* FINAL CHALLENGE */
+#banner{
+    position:fixed;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:24px;
+    color:red;
+    font-weight:bold;
+    z-index:9999;
+}
+
+/* DARK OVERLAY */
+#overlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+    display:none;
+    z-index:9998;
+}
+
+/* SHAKE */
+.shake{
+    animation: shake 0.4s infinite;
+}
+@keyframes shake{
+    0%{transform:translate(0);}
+    25%{transform:translate(-5px,5px);}
+    50%{transform:translate(5px,-5px);}
+    75%{transform:translate(-5px,5px);}
+    100%{transform:translate(0);}
+}
+
+/* FIREWORKS */
+#fireworks{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:9997;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="fireworks"></canvas>
+<div id="overlay"></div>
+
+<div id="top"></div>
+
+<div id="start">
+<h2>🚗 Mission: Reach Science City</h2>
+<p>
+⏱️ This is a time-bound mission.<br>
+Answer all questions before time runs out.<br>
+⚠️ If time finishes, mission fails immediately.<br>
+🔥 Final challenge decides success.
+</p>
+<button onclick="startGame()">Start Mission</button>
+</div>
+
+<div id="game" style="display:none;">
+<div id="track">
+<div id="finish"></div>
+<div id="car">🚗</div>
+</div>
+
+<div id="card">
+<h3 id="q"></h3>
+<div id="opts"></div>
+<p id="msg"></p>
+</div>
+
+<div id="banner"></div>
+<div id="final"></div>
+</div>
+
+<script>
+
+let score=0,lives=3,time=60;
+let carPos=20,current=0;
+let timer,gameOver=false;
+
+function finishPos(){
+return document.getElementById("track").offsetWidth - 90;
+}
+
+/* QUESTIONS */
+const questions=[ /* same 10 */
+{q:"Which of the following statements best describes what a force is?",o:["It is the weight of an object","It is a push or a pull acting on an object","It is the speed of an object","It is heat energy"],a:1},
+{q:"Which force pulls objects toward the Earth?",o:["Magnetic force","Frictional force","Gravitational force","Electrostatic force"],a:2},
+{q:"What is energy?",o:["Ability to do work","Matter","Speed","Mass"],a:0},
+{q:"In which direction does friction act?",o:["Same direction","Opposite direction","Upward","Downward"],a:1},
+{q:"Which is a non-renewable energy source?",o:["Solar","Wind","Fossil fuels","Water"],a:2},
+{q:"What happens when an unbalanced force acts on an object?",o:["Mass changes","Motion changes","Object disappears","Energy ends"],a:1},
+{q:"Why do kabaddi players use soil on their hands?",o:["To reduce friction","To increase friction","To cool hands","For decoration"],a:1},
+{q:"A ball kept at a height has which type of energy?",o:["Kinetic energy","Potential energy","Heat energy","Sound energy"],a:1},
+{q:"What type of energy conversion occurs in a flashlight?",o:["Electrical to light","Chemical to electrical to light","Heat to light","Mechanical to light"],a:1},
+{q:"If a feather and hammer fall on the Moon without air, what happens?",o:["Hammer falls first","Feather floats","Both fall together","Neither falls"],a:2}
+];
+
+/* FINAL */
+const finalQ={
+q:"If friction is completely removed, what will happen to a moving object?",
+o:["It will stop quickly","It will not move","It will keep moving unless another force acts","Only heavy objects will move"],
+a:2
+};
+
+/* START */
+function startGame(){
+document.getElementById("start").style.display="none";
+document.getElementById("game").style.display="block";
+
+loadQ(); update();
+
+timer=setInterval(()=>{
+time--;
+update();
+if(time<=0) failGame("⏱️ TIME UP! MISSION FAILED");
+},1000);
+}
+
+/* LOAD */
+function loadQ(){
+if(gameOver) return;
+
+if(current>=questions.length){ finalChallenge(); return; }
+
+let q=questions[current];
+document.getElementById("q").innerHTML=q.q;
+
+let html="";
+q.o.forEach((opt,i)=>{
+html+=`<div class="option" onclick="check(${i})">${opt}</div>`;
+});
+document.getElementById("opts").innerHTML=html;
+document.getElementById("msg").innerHTML="";
+}
+
+/* MOVE */
+function moveCar(step){
+carPos+=step;
+carPos=Math.max(20,Math.min(carPos,finishPos()));
+document.getElementById("car").style.left=carPos+"px";
+}
+
+/* CHECK */
+function check(i){
+if(gameOver) return;
+
+let q=questions[current];
+
+if(i===q.a){ score+=10; moveCar(35); }
+else{
+lives--; moveCar(-15);
+document.getElementById("msg").innerHTML="❌ Correct answer: "+q.o[q.a];
+}
+
+update();
+
+setTimeout(()=>{
+current++;
+if(lives<=0){ failGame("💥 NO LIVES LEFT! MISSION FAILED"); return; }
+loadQ();
+},1000);
+}
+
+/* FINAL */
+function finalChallenge(){
+document.getElementById("banner").innerHTML="🔥 FINAL CHALLENGE";
+document.getElementById("q").innerHTML=finalQ.q;
+
+let html="";
+finalQ.o.forEach((opt,i)=>{
+html+=`<div class="option" onclick="finalCheck(${i})">${opt}</div>`;
+});
+document.getElementById("opts").innerHTML=html;
+}
+
+/* FINAL CHECK */
+function finalCheck(i){
+if(gameOver) return;
+
+gameOver=true;
+clearInterval(timer);
+document.getElementById("banner").innerHTML="";
+
+if(i===finalQ.a) winGame();
+else failGame("❌ FINAL CHALLENGE FAILED");
+}
+
+/* 🎆 FIREWORKS */
+let canvas=document.getElementById("fireworks");
+let ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+function createFirework(x,y){
+for(let i=0;i<40;i++){
+particles.push({
+x,y,
+sx:(Math.random()-0.5)*6,
+sy:(Math.random()-0.5)*6,
+life:60,
+color:`hsl(${Math.random()*360},100%,50%)`
+});
+}
+}
+
+function updateFW(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+particles.forEach((p,i)=>{
+p.x+=p.sx; p.y+=p.sy; p.life--;
+ctx.beginPath();
+ctx.arc(p.x,p.y,3,0,Math.PI*2);
+ctx.fillStyle=p.color;
+ctx.fill();
+if(p.life<=0) particles.splice(i,1);
+});
+requestAnimationFrame(updateFW);
+}
+updateFW();
+
+function launchFireworks(){
+let count=0;
+let burst=setInterval(()=>{
+createFirework(Math.random()*canvas.width,Math.random()*canvas.height/2);
+if(++count>8) clearInterval(burst);
+},300);
+}
+
+/* WIN */
+function winGame(){
+let run=setInterval(()=>{
+carPos+=4;
+
+if(carPos>=finishPos()){
+carPos=finishPos();
+document.getElementById("car").style.left=carPos+"px";
+clearInterval(run);
+
+showFinal("🏁 MISSION ACCOMPLISHED!");
+launchFireworks();
+
+}else{
+document.getElementById("car").style.left=carPos+"px";
+}
+},40);
+}
+
+/* FAIL */
+function failGame(msg){
+gameOver=true;
+clearInterval(timer);
+
+document.getElementById("overlay").style.display="block";
+document.body.classList.add("shake");
+
+showFinal(msg);
+}
+
+/* SHOW FINAL */
+function showFinal(message){
+let final=document.getElementById("final");
+final.innerHTML=message;
+final.style.display="block";
+
+final.classList.remove("flash","bounce");
+
+if(message.includes("MISSION ACCOMPLISHED")){
+final.classList.add("flash","bounce");
+}else{
+final.classList.add("flash");
+}
+}
+
+/* UPDATE */
+function update(){
+document.getElementById("top").innerHTML=
+"Score: "+score+" | ❤️".repeat(lives)+" | ⏱️ "+time;
+}
+
+</script>
+
+</body>
+</html>
