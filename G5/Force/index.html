@@ -12,7 +12,7 @@ body{
     overflow-x:hidden;
 }
 
-/* TOP BAR */
+/* TOP */
 #top{
     background:#222;
     color:#fff;
@@ -98,11 +98,11 @@ body{
     animation: celebrate 0.8s infinite;
 }
 @keyframes celebrate{
-    0%{background:#fff;color:#000; transform:scale(1);}
-    25%{background:#FFD700;color:#000; transform:scale(1.05);}
-    50%{background:#00FF7F;color:#000; transform:scale(1.1);}
-    75%{background:#00BFFF;color:#fff; transform:scale(1.05);}
-    100%{background:#fff;color:#000; transform:scale(1);}
+    0%{background:#fff;color:#000;}
+    25%{background:#FFD700;}
+    50%{background:#00FF7F;}
+    75%{background:#00BFFF;color:#fff;}
+    100%{background:#fff;color:#000;}
 }
 
 /* BOUNCE */
@@ -126,7 +126,7 @@ body{
     z-index:9999;
 }
 
-/* DARK OVERLAY */
+/* OVERLAY */
 #overlay{
     position:fixed;
     top:0;
@@ -199,16 +199,16 @@ Answer all questions before time runs out.<br>
 
 <script>
 
-let score=0,lives=3,time=60;
-let carPos=20,current=0;
-let timer,gameOver=false;
-
-function finishPos(){
-return document.getElementById("track").offsetWidth - 90;
+/* RANDOMIZER */
+function shuffleArray(arr){
+for(let i=arr.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1));
+[arr[i],arr[j]]=[arr[j],arr[i]];
+}
 }
 
-/* QUESTIONS */
-const questions=[ /* same 10 */
+let allQuestions=[
+
 {q:"Which of the following statements best describes what a force is?",o:["It is the weight of an object","It is a push or a pull acting on an object","It is the speed of an object","It is heat energy"],a:1},
 {q:"Which force pulls objects toward the Earth?",o:["Magnetic force","Frictional force","Gravitational force","Electrostatic force"],a:2},
 {q:"What is energy?",o:["Ability to do work","Matter","Speed","Mass"],a:0},
@@ -218,22 +218,40 @@ const questions=[ /* same 10 */
 {q:"Why do kabaddi players use soil on their hands?",o:["To reduce friction","To increase friction","To cool hands","For decoration"],a:1},
 {q:"A ball kept at a height has which type of energy?",o:["Kinetic energy","Potential energy","Heat energy","Sound energy"],a:1},
 {q:"What type of energy conversion occurs in a flashlight?",o:["Electrical to light","Chemical to electrical to light","Heat to light","Mechanical to light"],a:1},
-{q:"If a feather and hammer fall on the Moon without air, what happens?",o:["Hammer falls first","Feather floats","Both fall together","Neither falls"],a:2}
+{q:"If a feather and hammer fall on the Moon without air, what happens?",o:["Hammer falls first","Feather floats","Both fall together","Neither falls"],a:2},
+
+/* extra for randomness */
+{q:"Which force opposes motion between two surfaces in contact?",o:["Gravity","Friction","Magnetism","Electric force"],a:1},
+{q:"Which form of energy is stored in food?",o:["Chemical energy","Light energy","Sound energy","Heat energy"],a:0},
+{q:"What type of force is applied when you push a door?",o:["Pull force","Push force","Magnetic force","Gravitational force"],a:1},
+{q:"Which object has more gravitational pull?",o:["Feather","Stone","Paper","Leaf"],a:1},
+{q:"What happens to a moving object if no force acts on it?",o:["Stops immediately","Changes direction","Keeps moving","Disappears"],a:2}
 ];
 
-/* FINAL */
-const finalQ={
-q:"If friction is completely removed, what will happen to a moving object?",
-o:["It will stop quickly","It will not move","It will keep moving unless another force acts","Only heavy objects will move"],
-a:2
-};
+let questions=[];
+
+let score=0,lives=3,time=60;
+let carPos=20,current=0;
+let timer,gameOver=false;
+
+function finishPos(){
+return document.getElementById("track").offsetWidth - 90;
+}
 
 /* START */
 function startGame(){
+
 document.getElementById("start").style.display="none";
 document.getElementById("game").style.display="block";
 
-loadQ(); update();
+/* RANDOM QUESTIONS */
+shuffleArray(allQuestions);
+questions=allQuestions.slice(0,10);
+
+current=0;
+
+loadQ();
+update();
 
 timer=setInterval(()=>{
 time--;
@@ -299,7 +317,12 @@ html+=`<div class="option" onclick="finalCheck(${i})">${opt}</div>`;
 document.getElementById("opts").innerHTML=html;
 }
 
-/* FINAL CHECK */
+const finalQ={
+q:"If friction is completely removed, what will happen to a moving object?",
+o:["It will stop quickly","It will not move","It will keep moving unless another force acts","Only heavy objects will move"],
+a:2
+};
+
 function finalCheck(i){
 if(gameOver) return;
 
@@ -311,7 +334,7 @@ if(i===finalQ.a) winGame();
 else failGame("❌ FINAL CHALLENGE FAILED");
 }
 
-/* 🎆 FIREWORKS */
+/* FIREWORKS */
 let canvas=document.getElementById("fireworks");
 let ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
@@ -383,7 +406,7 @@ document.body.classList.add("shake");
 showFinal(msg);
 }
 
-/* SHOW FINAL */
+/* FINAL DISPLAY */
 function showFinal(message){
 let final=document.getElementById("final");
 final.innerHTML=message;
