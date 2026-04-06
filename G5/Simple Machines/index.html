@@ -3,131 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Machines Match-Up</title>
+    <title>Simple Machines: Engineer Edition</title>
     <style>
         :root {
             --primary: #4f46e5;
-            --success: #16a34a;
+            --success: #22c55e;
             --danger: #ef4444;
             --sky: #e0f2fe;
+            --gold: #f59e0b;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #f8fafc;
+            background: #f0f4f8;
             margin: 0;
             padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        h1 { color: #1e3a8a; font-size: 1.2rem; margin: 10px 0; text-align: center; }
+        h1 { color: #1e3a8a; margin: 10px 0; font-size: 1.6rem; text-shadow: 1px 1px 0px white; }
         
-        .stats {
-            background: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
-            font-weight: bold;
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
         }
+
+        .stat-card {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-weight: bold;
+            border-bottom: 3px solid #cbd5e1;
+            text-align: center;
+        }
+
+        .stat-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; display: block; }
 
         #item-bank {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px;
-            background: var(--sky);
-            padding: 15px;
-            border-radius: 12px;
+            gap: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
             width: 90%;
-            max-width: 600px;
-            min-height: 60px;
-            margin-bottom: 15px;
-            border: 2px dashed #7dd3fc;
+            max-width: 650px;
+            min-height: 80px;
+            margin-bottom: 20px;
+            border: 3px dashed #cbd5e1;
+            position: relative;
         }
 
         .drag-item {
             background: white;
             border: 2px solid #38bdf8;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 10px 16px;
+            border-radius: 12px;
             cursor: grab;
-            font-size: 0.9rem;
             font-weight: 600;
+            box-shadow: 0 4px 0px #38bdf8;
+            transition: all 0.1s;
             user-select: none;
-            transition: transform 0.1s;
         }
 
-        /* Visual cue for laptop dragging */
-        .drag-item:active { cursor: grabbing; }
-        
-        /* Visual cue for mobile selection */
-        .drag-item.selected {
-            background: #fef08a;
-            border-color: #ca8a04;
-            transform: scale(1.1);
-        }
+        .drag-item:active { transform: translateY(2px); box-shadow: 0 2px 0px #38bdf8; }
+        .drag-item.selected { background: #fef08a; border-color: var(--gold); transform: scale(1.1); }
 
         #drop-zones {
             display: grid;
             width: 100%;
-            max-width: 650px;
-            gap: 10px;
+            max-width: 700px;
+            gap: 12px;
             grid-template-columns: repeat(2, 1fr);
         }
 
-        @media (min-width: 600px) {
-            #drop-zones { grid-template-columns: repeat(3, 1fr); }
-        }
+        @media (min-width: 600px) { #drop-zones { grid-template-columns: repeat(3, 1fr); } }
 
         .zone {
-            background: white;
+            background: #ffffff;
             border: 2px solid #cbd5e1;
-            border-radius: 12px;
-            min-height: 100px;
+            border-radius: 15px;
+            min-height: 120px;
             padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: all 0.2s;
+            transition: 0.2s;
+            position: relative;
         }
 
-        .zone.hover { background: #eef2ff; border-color: var(--primary); }
-        .zone.wrong { animation: shake 0.4s; border-color: var(--danger); }
+        .zone.hover { background: #e0e7ff; border-color: var(--primary); }
+        
+        .zone.wrong { 
+            animation: shake 0.4s; 
+            border-color: var(--danger); 
+            background: #fee2e2; 
+        }
+
+        .oops-text {
+            position: absolute;
+            color: var(--danger);
+            font-weight: bold;
+            font-size: 1.2rem;
+            top: -20px;
+            animation: floatUp 0.6s ease-out forwards;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
+        }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
 
-        .zone h3 {
-            margin: 0 0 8px 0;
-            font-size: 0.75rem;
-            color: #475569;
-            text-transform: uppercase;
-            pointer-events: none;
-        }
+        .zone h3 { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; }
 
         .placed-item {
             background: #dcfce7;
-            border: 1px solid #22c55e;
-            color: #166534;
-            width: 95%;
-            padding: 4px;
-            margin: 2px 0;
-            border-radius: 5px;
-            font-size: 0.8rem;
+            border: 1px solid var(--success);
+            padding: 6px;
+            margin: 2px;
+            border-radius: 8px;
+            width: 90%;
             text-align: center;
+            font-size: 0.85rem;
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
         }
 
         #overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -140,17 +171,36 @@
             background: var(--success);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 0 #15803d;
         }
+
+        .restart-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #15803d; }
     </style>
 </head>
 <body>
 
-    <h1>⚙️ Simple Machine Match-Up</h1>
-    <div class="stats">Solved: <span id="score">0</span> / 10</div>
+    <h1>⚙️ Machine Match-Up</h1>
+    
+    <div class="stats-container">
+        <div class="stat-card">
+            <span class="stat-label">Progress</span>
+            <span id="score">0</span> / 10
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Timer</span>
+            <span id="timer">0.0</span>s
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Best Time</span>
+            <span id="best-time">--</span>
+        </div>
+    </div>
 
     <div id="item-bank"></div>
 
@@ -164,11 +214,15 @@
     </div>
 
     <div id="overlay">
-        <h2>Great Job! <br> Wonderful young Engineer!!!🏆</h2>
+        <h2 style="font-size: 3rem;">🏆 CHAMPION!</h2>
+        <p id="final-stats" style="font-size: 1.4rem;"></p>
         <button class="restart-btn" onclick="startGame()">Play Again</button>
     </div>
 
     <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let score = 0, selectedEl = null, timerInterval = null, startTime = null, gameActive = false;
+
         const items = [
             { name: "✂️ Scissors", type: "lever" }, { name: "⚖️ See-saw", type: "lever" }, { name: "🔨 Hammer", type: "lever" },
             { name: "🚩 Flagpole", type: "pulley" }, { name: "🏗️ Crane", type: "pulley" }, { name: "🪣 Well Bucket", type: "pulley" },
@@ -178,14 +232,63 @@
             { name: "🏺 Jar Lid", type: "screw" }, { name: "🔩 Bolt", type: "screw" }, { name: "💡 Bulb Base", type: "screw" }
         ];
 
-        let score = 0;
-        let selectedEl = null;
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                osc.start(); osc.stop(now + 0.1);
+            } else if (type === 'oops') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(70, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                osc.start(); osc.stop(now + 0.2);
+            } else if (type === 'win') {
+                [440, 554, 659, 880].forEach((f, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(f, now + i * 0.1);
+                    g.gain.setValueAtTime(0.1, now + i * 0.1);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.4);
+                    o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.5);
+                });
+            }
+        }
+
+        function createParticles(x, y) {
+            for (let i = 0; i < 12; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.backgroundColor = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444'][Math.floor(Math.random()*4)];
+                document.body.appendChild(p);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 50 + Math.random() * 50;
+                p.animate([
+                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                    { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`, opacity: 0 }
+                ], { duration: 600, easing: 'ease-out' }).onfinish = () => p.remove();
+            }
+        }
 
         function startGame() {
-            score = 0;
-            selectedEl = null;
+            score = 0; gameActive = false;
+            clearInterval(timerInterval);
+            document.getElementById('timer').innerText = "0.0";
             document.getElementById('score').innerText = "0";
             document.getElementById('overlay').style.display = "none";
+            document.getElementById('best-time').innerText = localStorage.getItem('bestTimeMachine') || "--";
+
             document.querySelectorAll('.zone').forEach(z => {
                 const h3 = z.querySelector('h3');
                 z.innerHTML = ''; z.appendChild(h3);
@@ -193,74 +296,79 @@
 
             const bank = document.getElementById('item-bank');
             bank.innerHTML = '';
-            const picked = [...items].sort(() => 0.5 - Math.random()).slice(0, 10);
-
-            picked.forEach(item => {
+            [...items].sort(() => 0.5 - Math.random()).slice(0, 10).forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'drag-item';
                 div.innerText = item.name;
                 div.draggable = true;
                 div.dataset.type = item.type;
-
-                // Laptop: Drag Start
-                div.addEventListener('dragstart', (e) => {
-                    selectedEl = div;
-                    e.dataTransfer.setData('text/plain', item.type);
-                });
-
-                // Mobile/Tablet: Tap to Select
-                div.addEventListener('click', () => {
+                div.onclick = () => { 
+                    if(!gameActive) startClock();
                     document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('selected'));
-                    selectedEl = div;
-                    div.classList.add('selected');
-                });
-
+                    selectedEl = div; div.classList.add('selected'); 
+                };
+                div.ondragstart = () => { if(!gameActive) startClock(); selectedEl = div; };
                 bank.appendChild(div);
             });
         }
 
+        function startClock() {
+            gameActive = true;
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                document.getElementById('timer').innerText = ((Date.now() - startTime) / 1000).toFixed(1);
+            }, 100);
+        }
+
         document.querySelectorAll('.zone').forEach(zone => {
-            // Laptop: Drag Over/Drop
-            zone.addEventListener('dragover', (e) => e.preventDefault());
-            zone.addEventListener('dragenter', () => zone.classList.add('hover'));
-            zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
-
-            zone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                zone.classList.remove('hover');
-                checkMatch(zone);
-            });
-
-            // Mobile/Tablet: Tap the Zone
-            zone.addEventListener('click', () => {
-                if (selectedEl) checkMatch(zone);
-            });
+            zone.ondragover = (e) => e.preventDefault();
+            zone.ondragenter = () => zone.classList.add('hover');
+            zone.ondragleave = () => zone.classList.remove('hover');
+            zone.ondrop = (e) => { e.preventDefault(); zone.classList.remove('hover'); checkMatch(zone, e.clientX, e.clientY); };
+            zone.onclick = (e) => { if(selectedEl) checkMatch(zone, e.clientX, e.clientY); };
         });
 
-        function checkMatch(zone) {
+        function checkMatch(zone, x, y) {
             if (!selectedEl) return;
 
             if (selectedEl.dataset.type === zone.dataset.type) {
-                // SUCCESS
                 score++;
+                playSound('correct');
+                createParticles(x || window.innerWidth/2, y || window.innerHeight/2);
                 document.getElementById('score').innerText = score;
-                
                 const newItem = document.createElement('div');
                 newItem.className = 'placed-item';
                 newItem.innerText = selectedEl.innerText;
                 zone.appendChild(newItem);
-
-                selectedEl.remove(); // Item disappears from bank
+                selectedEl.remove();
                 selectedEl = null;
 
-                if (score === 10) {
-                    setTimeout(() => document.getElementById('overlay').style.display = 'flex', 300);
-                }
+                if (score === 10) endGame();
             } else {
-                // WRONG
+                playSound('oops');
                 zone.classList.add('wrong');
-                setTimeout(() => zone.classList.remove('wrong'), 400);
+                const oops = document.createElement('div');
+                oops.className = 'oops-text';
+                oops.innerText = 'Oops! ❌';
+                zone.appendChild(oops);
+                setTimeout(() => { zone.classList.remove('wrong'); oops.remove(); }, 600);
             }
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            const finalTime = parseFloat(document.getElementById('timer').innerText);
+            const bestTime = localStorage.getItem('bestTimeMachine');
+            
+            let message = `You finished in ${finalTime} seconds!`;
+            if (!bestTime || finalTime < parseFloat(bestTime)) {
+                localStorage.setItem('bestTimeMachine', finalTime);
+                message = `🚀 NEW RECORD: ${finalTime}s!`;
+            }
+            
+            playSound('win');
+            document.getElementById('final-stats').innerText = message;
+            document.getElementById('overlay').style.display = 'flex';
         }
 
         window.onload = startGame;
