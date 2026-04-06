@@ -22,10 +22,10 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            touch-action: none; /* Prevents scrolling while dragging */
+            touch-action: none; /* Crucial for mobile dragging */
         }
 
-        h1 { color: #1e3a8a; font-size: 1.2rem; margin: 10px 0; }
+        h1 { color: #1e3a8a; font-size: 1.2rem; margin: 10px 0; text-align: center; }
         
         .stats {
             background: white;
@@ -45,9 +45,11 @@
             padding: 15px;
             border-radius: 12px;
             width: 90%;
+            max-width: 600px;
             min-height: 60px;
             margin-bottom: 15px;
             border: 2px dashed #7dd3fc;
+            position: relative;
         }
 
         .drag-item {
@@ -60,7 +62,11 @@
             font-weight: 600;
             user-select: none;
             touch-action: none;
-            z-index: 10;
+            z-index: 100;
+        }
+
+        .drag-item.dragging {
+            opacity: 0.5;
         }
 
         #drop-zones {
@@ -69,6 +75,10 @@
             max-width: 600px;
             gap: 10px;
             grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 768px) {
+            #drop-zones { grid-template-columns: repeat(3, 1fr); }
         }
 
         .zone {
@@ -80,17 +90,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            pointer-events: auto;
         }
 
-        .zone.hover { background: #e0e7ff; border-color: var(--primary); }
+        .zone.hover { background: #e0e7ff; border-color: var(--primary); transform: scale(1.02); }
         .zone.wrong { background: #fee2e2; border-color: var(--danger); }
 
         .zone h3 {
             margin: 0 0 8px 0;
             font-size: 0.8rem;
             color: #475569;
-            pointer-events: none;
+            text-transform: uppercase;
+            pointer-events: none; /* Prevents interference during drag */
         }
 
         .placed-item {
@@ -103,7 +115,10 @@
             border-radius: 5px;
             font-size: 0.8rem;
             text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
         #overlay {
             position: fixed;
@@ -122,6 +137,7 @@
             color: white;
             border: none;
             padding: 12px 30px;
+            font-size: 1.1rem;
             border-radius: 25px;
             cursor: pointer;
             margin-top: 15px;
@@ -130,7 +146,7 @@
 </head>
 <body>
 
-    <h1>⚙️ Simple Machine Match</h1>
+    <h1>⚙️ Simple Machine Match-Up</h1>
     <div class="stats">Solved: <span id="score">0</span> / 10</div>
 
     <div id="item-bank"></div>
@@ -145,7 +161,7 @@
     </div>
 
     <div id="overlay">
-        <h2>Well Done! 🏆</h2>
+        <h2>Great Job, Engineer! 🏆</h2>
         <button class="restart-btn" onclick="startGame()">Play Again</button>
     </div>
 
@@ -162,7 +178,6 @@
         let score = 0;
         const totalToWin = 10;
         let activeElement = null;
-        let startX, startY;
 
         function startGame() {
             score = 0;
@@ -170,7 +185,8 @@
             document.getElementById('overlay').style.display = "none";
             document.querySelectorAll('.zone').forEach(z => {
                 const title = z.querySelector('h3');
-                z.innerHTML = ''; z.appendChild(title);
+                z.innerHTML = '';
+                z.appendChild(title);
             });
 
             const bank = document.getElementById('item-bank');
@@ -182,59 +198,87 @@
                 div.className = 'drag-item';
                 div.innerText = item.name;
                 div.dataset.type = item.type;
-                
-                // Touch Events
-                div.addEventListener('touchstart', touchStart, {passive: false});
-                div.addEventListener('touchmove', touchMove, {passive: false});
-                div.addEventListener('touchend', touchEnd);
-                
+                div.draggable = true;
+
+                // Desktop Mouse Events
+                div.addEventListener('dragstart', (e) => {
+                    activeElement = div;
+                    e.dataTransfer.setData('text/plain', JSON.stringify(item));
+                    setTimeout(() => div.classList.add('dragging'), 0);
+                });
+                div.addEventListener('dragend', () => div.classList.remove('dragging'));
+
+                // Mobile Touch Events
+                div.addEventListener('touchstart', handleTouchStart, {passive: false});
+                div.addEventListener('touchmove', handleTouchMove, {passive: false});
+                div.addEventListener('touchend', handleTouchEnd);
+
                 bank.appendChild(div);
             });
         }
 
-        function touchStart(e) {
-            activeElement = e.target;
-            const touch = e.touches[0];
-            startX = touch.clientX - activeElement.offsetLeft;
-            startY = touch.clientY - activeElement.offsetTop;
-            activeElement.style.position = 'fixed';
-            activeElement.style.width = activeElement.offsetWidth + 'px';
+        // --- UNIFIED SUCCESS LOGIC ---
+        function handleCorrectDrop(zone, itemName) {
+            score++;
+            document.getElementById('score').innerText = score;
+            
+            const newItem = document.createElement('div');
+            newItem.className = 'placed-item';
+            newItem.innerText = itemName;
+            zone.appendChild(newItem);
+
+            if (activeElement) activeElement.remove();
+            
+            if (score === totalToWin) {
+                setTimeout(() => document.getElementById('overlay').style.display = 'flex', 300);
+            }
         }
 
-        function touchMove(e) {
-            if (!activeElement) return;
+        // --- DESKTOP DROP LOGIC ---
+        document.querySelectorAll('.zone').forEach(zone => {
+            zone.addEventListener('dragover', (e) => e.preventDefault());
+            zone.addEventListener('dragenter', () => zone.classList.add('hover'));
+            zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('hover');
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                if (data.type === zone.dataset.type) {
+                    handleCorrectDrop(zone, data.name);
+                } else {
+                    zone.classList.add('wrong');
+                    setTimeout(() => zone.classList.remove('wrong'), 400);
+                }
+            });
+        });
+
+        // --- MOBILE TOUCH LOGIC ---
+        function handleTouchStart(e) {
+            activeElement = e.target;
+            activeElement.style.position = 'fixed';
+            activeElement.style.width = activeElement.offsetWidth + 'px';
+            updateTouchPos(e.touches[0].clientX, e.touches[0].clientY);
+        }
+
+        function handleTouchMove(e) {
             e.preventDefault();
             const touch = e.touches[0];
-            activeElement.style.left = (touch.clientX - activeElement.offsetWidth / 2) + 'px';
-            activeElement.style.top = (touch.clientY - activeElement.offsetHeight / 2) + 'px';
+            updateTouchPos(touch.clientX, touch.clientY);
 
-            // Hover effect
             const zone = getZoneUnderPoint(touch.clientX, touch.clientY);
             document.querySelectorAll('.zone').forEach(z => z.classList.remove('hover'));
             if (zone) zone.classList.add('hover');
         }
 
-        function touchEnd(e) {
-            if (!activeElement) return;
+        function handleTouchEnd(e) {
             const touch = e.changedTouches[0];
             const zone = getZoneUnderPoint(touch.clientX, touch.clientY);
-            const itemType = activeElement.dataset.type;
-            const itemName = activeElement.innerText;
+            const type = activeElement.dataset.type;
+            const name = activeElement.innerText;
 
-            if (zone && zone.dataset.type === itemType) {
-                // SUCCESS
-                score++;
-                document.getElementById('score').innerText = score;
-                
-                const newItem = document.createElement('div');
-                newItem.className = 'placed-item';
-                newItem.innerText = itemName;
-                zone.appendChild(newItem);
-                
-                activeElement.remove(); // Disappears from bank
-                if (score === totalToWin) document.getElementById('overlay').style.display = 'flex';
+            if (zone && zone.dataset.type === type) {
+                handleCorrectDrop(zone, name);
             } else {
-                // FAILURE - Snap back
                 if (zone) {
                     zone.classList.add('wrong');
                     setTimeout(() => zone.classList.remove('wrong'), 400);
@@ -242,9 +286,13 @@
                 activeElement.style.position = 'static';
                 activeElement.style.width = 'auto';
             }
-
             document.querySelectorAll('.zone').forEach(z => z.classList.remove('hover'));
             activeElement = null;
+        }
+
+        function updateTouchPos(x, y) {
+            activeElement.style.left = (x - activeElement.offsetWidth / 2) + 'px';
+            activeElement.style.top = (y - activeElement.offsetHeight / 2) + 'px';
         }
 
         function getZoneUnderPoint(x, y) {
