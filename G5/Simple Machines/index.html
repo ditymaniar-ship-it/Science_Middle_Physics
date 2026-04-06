@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Machines Match-Up</title>
     <style>
         :root {
@@ -21,8 +21,6 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            overflow-x: hidden;
-            touch-action: none; /* Crucial for mobile dragging */
         }
 
         h1 { color: #1e3a8a; font-size: 1.2rem; margin: 10px 0; text-align: center; }
@@ -49,7 +47,6 @@
             min-height: 60px;
             margin-bottom: 15px;
             border: 2px dashed #7dd3fc;
-            position: relative;
         }
 
         .drag-item {
@@ -61,23 +58,28 @@
             font-size: 0.9rem;
             font-weight: 600;
             user-select: none;
-            touch-action: none;
-            z-index: 100;
+            transition: transform 0.1s;
         }
 
-        .drag-item.dragging {
-            opacity: 0.5;
+        /* Visual cue for laptop dragging */
+        .drag-item:active { cursor: grabbing; }
+        
+        /* Visual cue for mobile selection */
+        .drag-item.selected {
+            background: #fef08a;
+            border-color: #ca8a04;
+            transform: scale(1.1);
         }
 
         #drop-zones {
             display: grid;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
             gap: 10px;
             grid-template-columns: repeat(2, 1fr);
         }
 
-        @media (min-width: 768px) {
+        @media (min-width: 600px) {
             #drop-zones { grid-template-columns: repeat(3, 1fr); }
         }
 
@@ -85,40 +87,42 @@
             background: white;
             border: 2px solid #cbd5e1;
             border-radius: 12px;
-            min-height: 110px;
-            padding: 8px;
+            min-height: 100px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             transition: all 0.2s;
-            pointer-events: auto;
         }
 
-        .zone.hover { background: #e0e7ff; border-color: var(--primary); transform: scale(1.02); }
-        .zone.wrong { background: #fee2e2; border-color: var(--danger); }
+        .zone.hover { background: #eef2ff; border-color: var(--primary); }
+        .zone.wrong { animation: shake 0.4s; border-color: var(--danger); }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
 
         .zone h3 {
             margin: 0 0 8px 0;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #475569;
             text-transform: uppercase;
-            pointer-events: none; /* Prevents interference during drag */
+            pointer-events: none;
         }
 
         .placed-item {
             background: #dcfce7;
             border: 1px solid #22c55e;
             color: #166534;
-            width: 90%;
-            padding: 5px;
+            width: 95%;
+            padding: 4px;
             margin: 2px 0;
             border-radius: 5px;
             font-size: 0.8rem;
             text-align: center;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
         #overlay {
             position: fixed;
@@ -137,7 +141,6 @@
             color: white;
             border: none;
             padding: 12px 30px;
-            font-size: 1.1rem;
             border-radius: 25px;
             cursor: pointer;
             margin-top: 15px;
@@ -161,12 +164,12 @@
     </div>
 
     <div id="overlay">
-        <h2>Great Job, Engineer! 🏆</h2>
+        <h2>Great Job! 🏆</h2>
         <button class="restart-btn" onclick="startGame()">Play Again</button>
     </div>
 
     <script>
-        const masterBank = [
+        const items = [
             { name: "✂️ Scissors", type: "lever" }, { name: "⚖️ See-saw", type: "lever" }, { name: "🔨 Hammer", type: "lever" },
             { name: "🚩 Flagpole", type: "pulley" }, { name: "🏗️ Crane", type: "pulley" }, { name: "🪣 Well Bucket", type: "pulley" },
             { name: "♿ Ramp", type: "inclined plane" }, { name: "🛝 Slide", type: "inclined plane" }, { name: "🪜 Ladder", type: "inclined plane" },
@@ -176,128 +179,88 @@
         ];
 
         let score = 0;
-        const totalToWin = 10;
-        let activeElement = null;
+        let selectedEl = null;
 
         function startGame() {
             score = 0;
+            selectedEl = null;
             document.getElementById('score').innerText = "0";
             document.getElementById('overlay').style.display = "none";
             document.querySelectorAll('.zone').forEach(z => {
-                const title = z.querySelector('h3');
-                z.innerHTML = '';
-                z.appendChild(title);
+                const h3 = z.querySelector('h3');
+                z.innerHTML = ''; z.appendChild(h3);
             });
 
             const bank = document.getElementById('item-bank');
             bank.innerHTML = '';
-            const picked = [...masterBank].sort(() => 0.5 - Math.random()).slice(0, totalToWin);
+            const picked = [...items].sort(() => 0.5 - Math.random()).slice(0, 10);
 
             picked.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'drag-item';
                 div.innerText = item.name;
-                div.dataset.type = item.type;
                 div.draggable = true;
+                div.dataset.type = item.type;
 
-                // Desktop Mouse Events
+                // Laptop: Drag Start
                 div.addEventListener('dragstart', (e) => {
-                    activeElement = div;
-                    e.dataTransfer.setData('text/plain', JSON.stringify(item));
-                    setTimeout(() => div.classList.add('dragging'), 0);
+                    selectedEl = div;
+                    e.dataTransfer.setData('text/plain', item.type);
                 });
-                div.addEventListener('dragend', () => div.classList.remove('dragging'));
 
-                // Mobile Touch Events
-                div.addEventListener('touchstart', handleTouchStart, {passive: false});
-                div.addEventListener('touchmove', handleTouchMove, {passive: false});
-                div.addEventListener('touchend', handleTouchEnd);
+                // Mobile/Tablet: Tap to Select
+                div.addEventListener('click', () => {
+                    document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('selected'));
+                    selectedEl = div;
+                    div.classList.add('selected');
+                });
 
                 bank.appendChild(div);
             });
         }
 
-        // --- UNIFIED SUCCESS LOGIC ---
-        function handleCorrectDrop(zone, itemName) {
-            score++;
-            document.getElementById('score').innerText = score;
-            
-            const newItem = document.createElement('div');
-            newItem.className = 'placed-item';
-            newItem.innerText = itemName;
-            zone.appendChild(newItem);
-
-            if (activeElement) activeElement.remove();
-            
-            if (score === totalToWin) {
-                setTimeout(() => document.getElementById('overlay').style.display = 'flex', 300);
-            }
-        }
-
-        // --- DESKTOP DROP LOGIC ---
         document.querySelectorAll('.zone').forEach(zone => {
+            // Laptop: Drag Over/Drop
             zone.addEventListener('dragover', (e) => e.preventDefault());
             zone.addEventListener('dragenter', () => zone.classList.add('hover'));
             zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
+
             zone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 zone.classList.remove('hover');
-                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-                if (data.type === zone.dataset.type) {
-                    handleCorrectDrop(zone, data.name);
-                } else {
-                    zone.classList.add('wrong');
-                    setTimeout(() => zone.classList.remove('wrong'), 400);
-                }
+                checkMatch(zone);
+            });
+
+            // Mobile/Tablet: Tap the Zone
+            zone.addEventListener('click', () => {
+                if (selectedEl) checkMatch(zone);
             });
         });
 
-        // --- MOBILE TOUCH LOGIC ---
-        function handleTouchStart(e) {
-            activeElement = e.target;
-            activeElement.style.position = 'fixed';
-            activeElement.style.width = activeElement.offsetWidth + 'px';
-            updateTouchPos(e.touches[0].clientX, e.touches[0].clientY);
-        }
+        function checkMatch(zone) {
+            if (!selectedEl) return;
 
-        function handleTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            updateTouchPos(touch.clientX, touch.clientY);
+            if (selectedEl.dataset.type === zone.dataset.type) {
+                // SUCCESS
+                score++;
+                document.getElementById('score').innerText = score;
+                
+                const newItem = document.createElement('div');
+                newItem.className = 'placed-item';
+                newItem.innerText = selectedEl.innerText;
+                zone.appendChild(newItem);
 
-            const zone = getZoneUnderPoint(touch.clientX, touch.clientY);
-            document.querySelectorAll('.zone').forEach(z => z.classList.remove('hover'));
-            if (zone) zone.classList.add('hover');
-        }
+                selectedEl.remove(); // Item disappears from bank
+                selectedEl = null;
 
-        function handleTouchEnd(e) {
-            const touch = e.changedTouches[0];
-            const zone = getZoneUnderPoint(touch.clientX, touch.clientY);
-            const type = activeElement.dataset.type;
-            const name = activeElement.innerText;
-
-            if (zone && zone.dataset.type === type) {
-                handleCorrectDrop(zone, name);
-            } else {
-                if (zone) {
-                    zone.classList.add('wrong');
-                    setTimeout(() => zone.classList.remove('wrong'), 400);
+                if (score === 10) {
+                    setTimeout(() => document.getElementById('overlay').style.display = 'flex', 300);
                 }
-                activeElement.style.position = 'static';
-                activeElement.style.width = 'auto';
+            } else {
+                // WRONG
+                zone.classList.add('wrong');
+                setTimeout(() => zone.classList.remove('wrong'), 400);
             }
-            document.querySelectorAll('.zone').forEach(z => z.classList.remove('hover'));
-            activeElement = null;
-        }
-
-        function updateTouchPos(x, y) {
-            activeElement.style.left = (x - activeElement.offsetWidth / 2) + 'px';
-            activeElement.style.top = (y - activeElement.offsetHeight / 2) + 'px';
-        }
-
-        function getZoneUnderPoint(x, y) {
-            const el = document.elementFromPoint(x, y);
-            return el ? el.closest('.zone') : null;
         }
 
         window.onload = startGame;
