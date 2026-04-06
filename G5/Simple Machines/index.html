@@ -8,6 +8,7 @@
         :root {
             --primary: #4f46e5;
             --success: #16a34a;
+            --danger: #ef4444;
             --sky: #e0f2fe;
         }
 
@@ -33,7 +34,6 @@
             font-weight: bold;
         }
 
-        /* DRAG BANK - Responsive Flex */
         #item-bank {
             display: flex;
             flex-wrap: wrap;
@@ -58,24 +58,18 @@
             font-size: 0.9rem;
             font-weight: 600;
             user-select: none;
-            touch-action: none; /* Required for some mobile drag libraries, but basic HTML5 drag is desktop-native */
         }
 
-        /* 3x2 MATRIX GRID */
         #drop-zones {
             display: grid;
             width: 100%;
             max-width: 1000px;
             gap: 15px;
-            /* Default Mobile: 1 or 2 columns */
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         }
 
-        /* Tablet & Desktop: Force 3 Columns */
         @media (min-width: 768px) {
-            #drop-zones {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            #drop-zones { grid-template-columns: repeat(3, 1fr); }
         }
 
         .zone {
@@ -94,6 +88,11 @@
             border-color: var(--primary);
             background: #eef2ff;
             transform: scale(1.02);
+        }
+
+        .zone.wrong {
+            border-color: var(--danger);
+            background: #fee2e2;
         }
 
         .zone h3 {
@@ -118,7 +117,6 @@
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } }
 
-        /* WIN OVERLAY */
         #overlay {
             position: fixed;
             inset: 0;
@@ -196,14 +194,12 @@
             document.getElementById('score').innerText = "0";
             document.getElementById('overlay').style.display = "none";
             
-            // Clear Categories
             document.querySelectorAll('.zone').forEach(z => {
                 const title = z.querySelector('h3');
                 z.innerHTML = '';
                 z.appendChild(title);
             });
 
-            // Randomize 10 Items
             const bankEl = document.getElementById('item-bank');
             bankEl.innerHTML = '';
             const picked = [...masterBank].sort(() => 0.5 - Math.random()).slice(0, totalToWin);
@@ -213,52 +209,53 @@
                 div.className = 'drag-item';
                 div.innerText = item.name;
                 div.draggable = true;
+                div.id = 'item-' + Math.random().toString(36).substr(2, 9);
                 div.addEventListener('dragstart', (e) => {
                     e.dataTransfer.setData('text/plain', JSON.stringify(item));
+                    e.dataTransfer.setData('elementId', div.id);
                 });
                 bankEl.appendChild(div);
             });
         }
 
-        // Zone Events
         document.querySelectorAll('.zone').forEach(zone => {
-            zone.addEventListener('dragover', e => {
-                e.preventDefault();
-                zone.classList.add('hover');
-            });
-
+            zone.addEventListener('dragover', e => e.preventDefault());
+            
+            zone.addEventListener('dragenter', () => zone.classList.add('hover'));
             zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
 
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 zone.classList.remove('hover');
+                
                 const itemData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                const elementId = e.dataTransfer.getData('elementId');
 
                 if (itemData.type === zone.dataset.type) {
                     score++;
                     document.getElementById('score').innerText = score;
                     
-                    // Remove from bank
-                    document.querySelectorAll('.drag-item').forEach(el => {
-                        if(el.innerText === itemData.name) el.remove();
-                    });
+                    const originalEl = document.getElementById(elementId);
+                    if (originalEl) originalEl.remove();
 
-                    // Add to category
                     const newItem = document.createElement('div');
                     newItem.className = 'placed-item';
                     newItem.innerText = itemData.name;
                     zone.appendChild(newItem);
 
                     if (score === totalToWin) {
-                        setTimeout(() => document.getElementById('overlay').style.display = 'flex', 400);
+                        setTimeout(() => {
+                            document.getElementById('overlay').style.display = "flex";
+                        }, 500);
                     }
                 } else {
-                    alert("Think again! How does that machine help move things?");
+                    zone.classList.add('wrong');
+                    setTimeout(() => zone.classList.remove('wrong'), 500);
                 }
             });
         });
 
-        startGame();
+        window.onload = startGame;
     </script>
 </body>
 </html>
