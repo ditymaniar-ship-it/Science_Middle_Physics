@@ -153,4 +153,120 @@
             if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
             if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
             ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0,
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+            ctx.fill();
+        });
+        requestAnimationFrame(drawParticles);
+    }
+
+    // --- GAME ENGINE ---
+    const quiz = [
+        {
+            s: "An engineering team is designing a 'Desert Explorer' bus. Standard tires sliced into the sand, so they replaced them with wide 'balloon' tires.",
+            q: "What is the primary physics reason for this change?",
+            a: ["Increase friction for speed", "Increase surface area to reduce pressure", "Reduce total weight", "Help the tires dig deeper"],
+            c: 1, img: "G 8/ Force and pressure/desert_bus.jpg"
+        },
+        {
+            s: "A carpenter sharpens a wooden dowel into a point. Suddenly, it enters the pre-drilled hole with the same amount of force.",
+            q: "Why does the point make it enter easily?",
+            a: ["Increased total force", "Reduced friction", "Smaller surface area creates higher pressure", "Chemical reaction"],
+            c: 2, img: "G 8/ Force and pressure/dowel.jpg"
+        },
+        {
+            s: "A chip bag at sea level is moved to a mountain peak 3,000m high. The bag puffs up and looks like it might pop.",
+            q: "What caused this expansion?",
+            a: ["Inside air got colder", "Gravity is stronger", "External atmospheric pressure decreased", "Bag is air-tight"],
+            c: 2, img: "G 8/ Force and pressure/atmospheric_layers.jpg"
+        },
+        {
+            s: "Look at the hydraulic system. A small force ($F_1$) on a small area ($A_1$) lifts a massive car.",
+            q: "How is this possible?",
+            a: ["Energy is created", "Volume increases", "Pressure is transmitted equally to a larger area", "Liquid moves faster"],
+            c: 2, img: "G 8/ Force and pressure/hydraulic_press.jpg"
+        }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let lives = 3;
+    let timer;
+
+    function startGame() {
+        current = 0; score = 0; lives = 3;
+        document.getElementById('overlay').style.display = 'none';
+        updateStats();
+        loadQ();
+    }
+
+    function loadQ() {
+        if(current >= quiz.length) return end(true);
+        const q = quiz[current];
+        document.getElementById('scenario').innerText = q.s;
+        document.getElementById('question').innerText = q.q;
+        document.getElementById('main-img').src = q.img;
+        
+        const optCont = document.getElementById('options');
+        optCont.innerHTML = '';
+        q.a.forEach((opt, i) => {
+            const b = document.createElement('div');
+            b.className = 'option';
+            b.innerText = opt;
+            b.onclick = () => check(i);
+            optCont.appendChild(b);
+        });
+        startTimer();
+    }
+
+    function check(i) {
+        clearInterval(timer);
+        const options = document.getElementsByClassName('option');
+        if(i === quiz[current].c) {
+            options[i].classList.add('correct');
+            score += 100;
+            particleColor = '#4ade80';
+        } else {
+            options[i].classList.add('wrong');
+            options[quiz[current].c].classList.add('correct');
+            lives--;
+            particleColor = '#f87171';
+        }
+        setTimeout(() => {
+            particleColor = 'rgba(34, 211, 238, 0.4)';
+            current++;
+            updateStats();
+            if(lives > 0) loadQ(); else end(false);
+        }, 1500);
+    }
+
+    function startTimer() {
+        let width = 100;
+        clearInterval(timer);
+        timer = setInterval(() => {
+            width -= 0.5;
+            document.getElementById('timer-fill').style.width = width + '%';
+            if(width <= 0) { lives--; check(-1); }
+        }, 100);
+    }
+
+    function updateStats() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('lives').innerText = lives;
+    }
+
+    function end(win) {
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('status-text').innerText = win ? "MISSION SUCCESS" : "MISSION FAILED";
+        document.getElementById('final-score').innerText = "SCORE: " + score;
+    }
+
+    function enlargeImg(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+
+    window.onload = () => { initParticles(); drawParticles(); startGame(); };
+    window.onresize = initParticles;
+</script>
+</body>
+</html>
