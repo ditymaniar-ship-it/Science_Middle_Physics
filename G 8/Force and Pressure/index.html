@@ -3,242 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pressure Pilot: Physics Challenge</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Pressure Pilot: Grade 8 Physics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0b0e14;
-            --accent-color: #00d4ff;
-            --correct-color: #2ecc71;
-            --wrong-color: #e74c3c;
+            --bg-dark: #0f172a;
+            --accent-blue: #38bdf8;
+            --panel-bg: rgba(30, 41, 59, 0.8);
+            --correct-green: #22c55e;
+            --wrong-red: #ef4444;
         }
 
         body {
             margin: 0;
-            padding: 0;
             font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-color);
-            color: white;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         #game-container {
-            width: 95%;
-            max-width: 600px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--accent-color);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 0 20px var(--accent-color);
+            width: 90%;
+            max-width: 700px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             position: relative;
         }
 
-        h1 { font-family: 'Orbitron', sans-serif; color: var(--accent-color); margin-bottom: 10px; }
-        
-        #stats-bar {
+        .stats {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
         }
 
-        #timer-bar {
+        #progress-wrapper {
             width: 100%;
-            height: 10px;
-            background: #333;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            height: 6px;
+            background: #334155;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
         }
 
-        #timer-fill {
+        #progress-bar {
             height: 100%;
             width: 100%;
-            background: var(--accent-color);
-            border-radius: 5px;
-            transition: width 1s linear;
+            background: var(--accent-blue);
+            transition: width 0.1s linear;
         }
 
-        #question-text {
-            font-size: 1.2rem;
+        .scenario-box {
             margin-bottom: 20px;
-            min-height: 80px;
         }
 
-        .option-btn {
-            display: block;
+        .scenario-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+        }
+
+        .q-image {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid white;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: 0.3s;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.2);
+            display: none; /* Hidden by default, shown if image exists */
         }
 
-        .option-btn:hover { background: rgba(0, 212, 255, 0.2); }
-        .correct { background-color: var(--correct-color) !important; }
-        .wrong { background-color: var(--wrong-color) !important; }
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
 
-        #screen-overlay {
+        .option {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .option:hover {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: var(--accent-blue);
+            transform: translateX(5px);
+        }
+
+        .correct { background: var(--correct-green) !important; color: white; }
+        .wrong { background: var(--wrong-red) !important; color: white; }
+
+        #overlay {
             display: none;
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            inset: 0;
+            background: var(--bg-dark);
+            border-radius: 20px;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10;
+            z-index: 100;
+            text-align: center;
         }
 
-        .btn-restart {
-            padding: 15px 30px;
-            background: var(--accent-color);
-            border: none;
-            color: black;
-            font-weight: bold;
+        .btn-action {
+            background: var(--accent-blue);
+            color: var(--bg-dark);
+            padding: 12px 30px;
             border-radius: 5px;
+            font-weight: bold;
+            border: none;
             cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="stats-bar">
-        <span>Lives: <span id="lives">3</span> ❤️</span>
-        <span>Score: <span id="score">0</span></span>
+    <div class="stats">
+        <span>SHIELDS: <span id="lives">3</span></span>
+        <span>SCORE: <span id="score">0</span></span>
     </div>
-    <div id="timer-bar"><div id="timer-fill"></div></div>
-    
-    <div id="game-box">
-        <h2 id="level-indicator">Level 1</h2>
-        <p id="question-text">Loading question...</p>
-        <div id="options-container"></div>
+    <div id="progress-wrapper"><div id="progress-bar"></div></div>
+
+    <div id="content">
+        <div class="scenario-box">
+            <img id="question-img" class="q-image" src="" alt="Experiment Diagram">
+            <p id="scenario-desc" class="scenario-text"></p>
+            <p id="question-ask" style="font-weight: bold; color: var(--accent-blue);"></p>
+        </div>
+        <div id="options" class="options-grid"></div>
     </div>
 
-    <div id="screen-overlay">
-        <h2 id="overlay-title">GAME OVER</h2>
-        <p id="final-score"></p>
-        <button class="btn-restart" onclick="resetGame()">RESTART MISSION</button>
+    <div id="overlay">
+        <h1 id="status-title">MISSION OVER</h1>
+        <p id="final-stats"></p>
+        <button class="btn-action" onclick="startGame()">REBOOT SYSTEM</button>
     </div>
 </div>
 
 <script>
-    const questions = [
-        { q: "A 'desert-bus' uses wider tires to cross dunes. Why?", a: ["Increase friction", "Reduce pressure by increasing area", "Decrease total weight", "Dig into sand"], correct: 1 },
-        { q: "A carpenter sharpens a dowel to a point. Why does it enter the wood easily now?", a: ["Increased total force", "Reduced friction", "Smaller area creates higher pressure", "Chemical reaction"], correct: 2 },
-        { q: "A bag of chips puffs up on a high mountain. Why?", a: ["Inside air got colder", "Gravity is stronger", "External atmospheric pressure decreased", "The bag is air-tight"], correct: 2 },
-        { q: "Bucket A (Water) vs Bucket B (Dense Syrup). Both same height. Which has more base pressure?", a: ["Both identical", "Bucket B (Higher density)", "Bucket A (Lower density)", "Height is the only factor"], correct: 1 },
-        { q: "Water shoots farthest from the bottom hole of a bottle. This proves:", a: ["Gravity only acts on the bottom", "Pressure increases with depth", "Air pushes the bottom water", "Liquids are heavier near the ground"], correct: 1 },
-        { q: "A person (600N) wears Snowshoes, Sneakers, or High Heels. Which damages a wooden floor most?", a: ["Snowshoes", "Sneakers", "High Heels (Highest pressure)", "All are the same"], correct: 2 },
-        { q: "How does a hydraulic lift move a heavy car with a small force?", a: ["Creates energy", "Increases liquid volume", "Same pressure acts on a larger area", "Moves liquid faster"], correct: 2 },
-        { q: "Why is a bed of 1,000 nails safe to lie on?", a: ["Weight is spread over large area", "Nails are made of soft steel", "Weight decreases when lying down", "Air pushes you up"], correct: 0 },
-        { q: "Why do non-rated cameras get crushed in the deep ocean?", a: ["Salt corrosion", "Cold water", "Crushing weight of the water column", "Deep sea fish"], correct: 2 },
-        { q: "What holds a suction cup to a window?", a: ["Sticky rubber", "External air pressure pushing it", "Magnetic attraction", "Gravity"], correct: 1 }
+    const quizData = [
+        {
+            scenario: "An engineering team is designing a 'Desert Explorer' bus for a trek across the Sahara. During testing, a standard city bus immediately got stuck because its thin tires sliced into the sand like a knife. The team replaces them with massive, low-pressure 'balloon' tires that are three times wider.",
+            q: "What is the primary physics reason for this change?",
+            options: ["To increase friction so the bus can climb dunes faster.", "To increase the surface area in contact with the sand to reduce pressure.", "To reduce the total weight of the bus acting on the ground.", "To decrease the surface area so the tires can dig into the sand."],
+            correct: 1,
+            img: null
+        },
+        {
+            scenario: "A carpenter is trying to assemble a chair by hand. He tries to push a flat-ended wooden dowel into a pre-drilled hole, but no matter how hard he pushes, it won't budge. He takes the dowel to a pencil sharpener and creates a sharp point.",
+            q: "Why does the pointed dowel enter the wood easily now?",
+            options: ["The sharpening process increased the total force applied.", "The point reduces friction between the wood and the dowel.", "The smaller surface area at the tip creates a much higher pressure.", "Wood reacts chemically to sharp objects."],
+            correct: 2,
+            img: null
+        },
+        {
+            scenario: "A hiker buys a bag of chips at sea level. After driving up to a mountain peak 3,000 meters high, he notices the bag is so tight it looks like it might pop.",
+            q: "What caused the bag to expand like a balloon?",
+            options: ["The air inside got colder and expanded.", "The bag is air-tight and gravity is stronger on the mountain.", "The external atmospheric pressure decreased, allowing internal air to push out.", "The altitude changed the chemical makeup of the chips."],
+            correct: 2,
+            img: "atmospheric_layers.jpg"
+        },
+        {
+            scenario: "You poke three identical holes into the side of a 2-liter soda bottle: one near the top, one in the middle, and one near the bottom. When filled, the water shoots out in different arcs.",
+            q: "If the bottom hole shoots the farthest, what does this prove?",
+            options: ["Gravity only acts on the bottom of a container.", "Liquid pressure increases as the depth of the liquid increases.", "Air pressure inside the bottle is pushing the bottom water out.", "Liquids are heavier when they are near the ground."],
+            correct: 1,
+            img: "leaky_bottle.jpg"
+        },
+        {
+            scenario: "A person weighing 600 N stands on a soft wooden floor wearing three different types of footwear: Snowshoes (150 cm²), Sneakers (50 cm²), and High Heels (2 cm²).",
+            q: "Which footwear is most likely to dent or damage the wood?",
+            options: ["Snowshoes, because they cover the most wood.", "Sneakers, because they are used for movement.", "High Heels, because they exert the highest pressure due to the tiny area.", "All will cause the same damage because the weight is identical."],
+            correct: 2,
+            img: "footwear_comparison.jpg"
+        },
+        {
+            scenario: "A research team sends a remote-operated vehicle (ROV) to the bottom of the Mariana Trench. A small external camera that wasn't 'pressure-rated' is crushed flat instantly.",
+            q: "Using the principles of liquid pressure, why did the camera fail?",
+            options: ["Salt in the ocean water corroded the camera's casing.", "The water is colder, making the camera brittle.", "The weight of the miles of water above created massive pressure from all directions.", "Deep-sea fish collided with the camera."],
+            correct: 2,
+            img: "underwater_pressure.jpg"
+        },
+        {
+            scenario: "A small force is applied to a small piston in a hydraulic system. This pressure is transmitted through the fluid to a much larger piston.",
+            q: "Why is this system effective at lifting heavy vehicles?",
+            options: ["It creates more energy than it consumes.", "It increases the total volume of the liquid.", "Pressure is the same throughout, so a larger area creates a larger upward force.", "The liquid moves faster on the larger side."],
+            correct: 2,
+            img: "hydraulic_press.jpg"
+        },
+        {
+            scenario: "A performer lies on a bed of 1,000 sharp nails without injury. If he stepped on one nail, it would pierce his foot.",
+            q: "Why is the bed of nails safe to lie on?",
+            options: ["The force of weight is distributed over a very large area, lowering pressure.", "The nails are made of special non-piercing material.", "The performer's weight decreases when lying down.", "The air between nails provides buoyancy."],
+            correct: 0,
+            img: "bed_of_nails.jpg"
+        }
     ];
 
-    let currentQ = 0;
+    let currentIdx = 0;
     let score = 0;
     let lives = 3;
-    let timeLeft = 20;
-    let timerInterval;
+    let timer;
+    let timeLeft = 250; // 25 seconds * 10
 
-    function initQuestion() {
-        if (currentQ >= questions.length) {
-            endGame(true);
-            return;
-        }
-        
-        timeLeft = 20;
-        document.getElementById('timer-fill').style.width = '100%';
-        
-        const qData = questions[currentQ];
-        document.getElementById('level-indicator').innerText = `Question ${currentQ + 1}`;
-        document.getElementById('question-text').innerText = qData.q;
-        
-        const container = document.getElementById('options-container');
-        container.innerHTML = '';
-        
-        qData.a.forEach((opt, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(index);
-            container.appendChild(btn);
-        });
-
-        startTimer();
-    }
-
-    function startTimer() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById('timer-fill').style.width = (timeLeft / 20 * 100) + '%';
-            if (timeLeft <= 0) {
-                handleWrong();
-            }
-        }, 1000);
-    }
-
-    function checkAnswer(idx) {
-        clearInterval(timerInterval);
-        const btns = document.getElementsByClassName('option-btn');
-        if (idx === questions[currentQ].correct) {
-            btns[idx].classList.add('correct');
-            score += 100 + (timeLeft * 5);
-            document.getElementById('score').innerText = score;
-            setTimeout(() => {
-                currentQ++;
-                initQuestion();
-            }, 1000);
-        } else {
-            btns[idx].classList.add('wrong');
-            btns[questions[currentQ].correct].classList.add('correct');
-            handleWrong();
-        }
-    }
-
-    function handleWrong() {
-        lives--;
-        document.getElementById('lives').innerText = lives;
-        if (lives <= 0) {
-            endGame(false);
-        } else {
-            setTimeout(() => {
-                currentQ++;
-                initQuestion();
-            }, 1500);
-        }
-    }
-
-    function endGame(win) {
-        clearInterval(timerInterval);
-        const overlay = document.getElementById('screen-overlay');
-        overlay.style.display = 'flex';
-        document.getElementById('overlay-title').innerText = win ? "MISSION COMPLETE!" : "SHIELDS DEPLETED!";
-        document.getElementById('final-score').innerText = `Final Score: ${score}`;
-    }
-
-    function resetGame() {
-        currentQ = 0;
+    function startGame() {
+        currentIdx = 0;
         score = 0;
         lives = 3;
-        document.getElementById('score').innerText = score;
-        document.getElementById('lives').innerText = lives;
-        document.getElementById('screen-overlay').style.display = 'none';
-        initQuestion();
+        document.getElementById('overlay').style.display = 'none';
+        updateStats();
+        showQuestion();
     }
 
-    initQuestion();
+    function updateStats() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('lives').innerText = "❤️".repeat(lives);
+    }
+
+    function showQuestion() {
+        if (currentIdx >= quizData.length) return end(true);
+        
+        const data = quizData[currentIdx];
+        document.getElementById('scenario-desc').innerText = data.scenario;
+        document.getElementById('question-ask').innerText = data.q;
+        
+        const imgEl = document.getElementById('question-img');
+        if (data.img) {
+            imgEl.src = data.img;
+            imgEl.style.display = 'block';
+        } else {
+            imgEl.style.display = 'none';
+        }
+
+        const optionsBox = document.getElementById('options');
+        optionsBox.innerHTML = '';
+        data.options.forEach((opt, i) => {
+            const div = document.createElement('div');
+            div.className = 'option';
+            div.innerText = opt;
+            div.onclick = () => check(i);
+            optionsBox.appendChild(div);
+        });
+
+        resetTimer();
+    }
+
+    function resetTimer() {
+        clearInterval(timer);
+        timeLeft = 250;
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('progress-bar').style.width = (timeLeft / 2.5) + '%';
+            if (timeLeft <= 0) {
+                lives--;
+                next();
+            }
+        }, 100);
+    }
+
+    function check(i) {
+        clearInterval(timer);
+        const options = document.getElementsByClassName('option');
+        if (i === quizData[currentIdx].correct) {
+            options[i].classList.add('correct');
+            score += 100 + Math.floor(timeLeft/2);
+        } else {
+            options[i].classList.add('wrong');
+            options[quizData[currentIdx].correct].classList.add('correct');
+            lives--;
+        }
+        updateStats();
+        setTimeout(next, 2000);
+    }
+
+    function next() {
+        if (lives <= 0) return end(false);
+        currentIdx++;
+        if (currentIdx < quizData.length) showQuestion();
+        else end(true);
+    }
+
+    function end(win) {
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('status-title').innerText = win ? "MISSION COMPLETE" : "SYSTEM FAILURE";
+        document.getElementById('final-stats').innerText = `Final Score: ${score}`;
+    }
+
+    startGame();
 </script>
 
 </body>
