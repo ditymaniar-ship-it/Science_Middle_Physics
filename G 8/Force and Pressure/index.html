@@ -3,126 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Force & Pressure Quiz</title>
+    <title>Force & Pressure: Cadet Challenge</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #e74c3c; }
-        body { font-family: sans-serif; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        #game-box { background: white; color: #333; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; text-align: center; }
-        .progress-bar { height: 10px; background: #ddd; border-radius: 5px; margin-bottom: 20px; }
-        #progress { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; border-radius: 5px;}
-        .options { display: grid; gap: 10px; margin-top: 20px; }
-        button { padding: 12px; border: 2px solid var(--accent); background: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background: var(--accent); color: white; }
-        #feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; font-size: 0.9rem; }
-        .correct { background: #d4edda; color: #155724; display: block !important; }
-        .wrong { background: #f8d7da; color: #721c24; display: block !important; }
-        #next-btn { margin-top: 15px; background: var(--primary); color: white; border: none; padding: 10px 20px; display: none; cursor: pointer; border-radius: 5px; }
+        :root {
+            --space-blue: #1a1a2e;
+            --neon-blue: #00d2ff;
+            --neon-purple: #9d50bb;
+            --correct-green: #2ecc71;
+            --wrong-red: #e74c3c;
+        }
+        body { 
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; 
+            background: linear-gradient(135deg, var(--space-blue), #16213e);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #game-container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 0 20px var(--neon-blue);
+            width: 90%;
+            max-width: 550px;
+            text-align: center;
+            position: relative;
+            border: 4px solid var(--neon-blue);
+        }
+        .header-info { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: var(--space-blue); }
+        .progress-container { height: 12px; background: #eee; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(to right, var(--neon-blue), var(--neon-purple)); width: 0%; transition: 0.5s; }
+        h2 { margin-top: 0; color: var(--neon-purple); text-transform: uppercase; letter-spacing: 1px; }
+        .question-text { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; min-height: 60px; }
+        .options-grid { display: grid; gap: 12px; }
+        .opt-btn { 
+            padding: 15px; border: 2px solid #ddd; background: white; border-radius: 15px; 
+            cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s;
+        }
+        .opt-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.1); border-color: var(--neon-blue); }
+        #explanation { 
+            margin-top: 20px; padding: 15px; border-radius: 15px; display: none; 
+            animation: slideUp 0.4s ease; font-size: 0.95rem; line-height: 1.4;
+        }
+        .success { background: #d4edda; color: #155724; border: 2px solid var(--correct-green); }
+        .fail { background: #f8d7da; color: #721c24; border: 2px solid var(--wrong-red); }
+        #next-btn { 
+            margin-top: 20px; padding: 12px 30px; border: none; border-radius: 50px;
+            background: var(--neon-purple); color: white; font-size: 1.1rem; cursor: pointer; display: none;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div id="game-box">
-    <div class="progress-bar"><div id="progress"></div></div>
-    <h2 id="level-title">Level 1</h2>
-    <p id="q-text">Question will appear here...</p>
-    <div class="options" id="opt-container"></div>
-    <div id="feedback"></div>
-    <button id="next-btn">Next Level →</button>
+<div id="game-container">
+    <div class="header-info">
+        <span id="level-display">LEVEL: 1/5</span>
+        <span id="lives-display">LIVES: ❤️❤️❤️</span>
+    </div>
+    <div class="progress-container"><div id="progress-bar"></div></div>
+    
+    <h2 id="title">Science Lab</h2>
+    <p class="question-text" id="question">Initializing systems...</p>
+    
+    <div class="options-grid" id="options"></div>
+    
+    <div id="explanation"></div>
+    <button id="next-btn">CONTINUE →</button>
 </div>
 
 <script>
-    const questions = [
+    const quizData = [
         {
-            title: "Level 1: Understanding",
-            q: "Which shoes should a performer wear to avoid sinking in soft mud?",
-            options: ["High-heeled boots", "Flat-soled sneakers", "Barefoot"],
+            level: "Level 1: Understanding",
+            q: "A circus performer is deciding which shoes to wear while walking across a soft, muddy field. To avoid sinking, which option should they choose?",
+            opts: ["High-heeled boots; they grip better", "Flat-soled sneakers; they spread the weight", "Barefoot; for better balance"],
             correct: 1,
-            fact: "Pressure = Force / Area. Flat soles increase the area, reducing the pressure on the ground."
+            fact: "<b>Physics Secret:</b> Pressure = Force ÷ Area. By using flat soles, you increase the surface area, which lowers the pressure so you don't sink!"
         },
         {
-            title: "Level 2: Application",
-            q: "Why does a sharp knife cut easier than a blunt one if force is the same?",
-            options: ["It creates more force", "The smaller area creates higher pressure", "It reduces gravity"],
+            level: "Level 2: Application",
+            q: "You use a sharp knife and a blunt knife to cut an apple with the same 10N force. Why does the sharp knife cut through easily?",
+            opts: ["The sharp knife creates more force", "The tiny contact area creates huge pressure", "The blunt knife creates too much friction"],
             correct: 1,
-            fact: "A sharp edge has a tiny surface area. This concentrates the force into much higher pressure!"
+            fact: "<b>Physics Secret:</b> Because the edge is so thin (small area), the pressure becomes strong enough to slice through the apple's skin easily."
         },
         {
-            title: "Level 3: Application",
-            q: "Why are submarine hulls built thicker at the bottom than the top?",
-            options: ["To balance weight", "Liquid pressure increases with depth", "To stop it from floating"],
+            level: "Level 3: Application",
+            q: "Engineers are building a deep-sea submarine. Why does the hull need to be much thicker at the bottom than at the top?",
+            opts: ["To keep the sub from flipping over", "Because liquid pressure increases with depth", "To protect against deep-sea creatures"],
             correct: 1,
-            fact: "The deeper you go, the more water is above you, pressing down with more weight."
+            fact: "<b>Physics Secret:</b> The deeper you go, the more water is stacked above you. All that weight creates massive pressure at the bottom!"
         },
         {
-            title: "Level 4: Critical Thinking",
-            q: "If a leaking water bottle is dropped (free-fall), what happens to the leak?",
-            options: ["It leaks faster", "It stops leaking entirely", "It leaks at the same speed"],
+            level: "Level 4: Critical Thinking",
+            q: "You poke holes in a water bottle and it starts leaking. If you drop the bottle from a building, what happens to the leak while it's falling?",
+            opts: ["It shoots out faster", "It stops leaking entirely", "It leaks at the exact same speed"],
             correct: 1,
-            fact: "In free-fall, the water and bottle fall together. Gravity no longer 'pushes' the water out of the holes."
+            fact: "<b>Physics Secret:</b> In free-fall, everything is 'weightless.' Since gravity isn't 'pushing' the water down into the bottle, it stops leaking!"
         },
         {
-            title: "Level 5: Critical Thinking",
-            q: "Why does a bag of chips puff up at the top of a high mountain?",
-            options: ["Air inside gets hot", "External atmospheric pressure decreases", "Gravity is weaker"],
+            level: "Level 5: Critical Thinking",
+            q: "If you take a sealed bag of chips to the top of a high mountain, the bag 'puffs up' like a balloon. Why?",
+            opts: ["The air inside gets hot and expands", "External atmospheric pressure decreases", "Gravity is weaker at the top"],
             correct: 1,
-            fact: "At high altitudes, the outside air is 'thinner'. The air inside the bag pushes out harder than the outside air pushes back."
+            fact: "<b>Physics Secret:</b> Higher up, the outside air is 'thinner.' The air inside the bag pushes out harder than the mountain air can push back!"
         }
     ];
 
-    let currentIdx = 0;
+    let currentQ = 0;
+    let lives = 3;
 
-    const levelTitle = document.getElementById('level-title');
-    const qText = document.getElementById('q-text');
-    const optContainer = document.getElementById('opt-container');
-    const feedback = document.getElementById('feedback');
+    const qEl = document.getElementById('question');
+    const optEl = document.getElementById('options');
+    const expEl = document.getElementById('explanation');
     const nextBtn = document.getElementById('next-btn');
-    const progress = document.getElementById('progress');
+    const progress = document.getElementById('progress-bar');
+    const livesEl = document.getElementById('lives-display');
+    const levelEl = document.getElementById('level-display');
 
-    function loadQuestion() {
-        const currentQ = questions[currentIdx];
-        levelTitle.innerText = currentQ.title;
-        qText.innerText = currentQ.q;
-        feedback.style.display = 'none';
+    function initGame() {
+        if (currentQ >= quizData.length) {
+            winGame();
+            return;
+        }
+        
+        const data = quizData[currentQ];
+        levelEl.innerText = `LEVEL: ${currentQ + 1}/5`;
+        qEl.innerText = data.q;
+        document.getElementById('title').innerText = data.level;
+        expEl.style.display = 'none';
         nextBtn.style.display = 'none';
-        optContainer.innerHTML = '';
-        progress.style.width = ((currentIdx) / questions.length * 100) + "%";
+        optEl.innerHTML = '';
+        progress.style.width = (currentQ / quizData.length * 100) + "%";
 
-        currentQ.options.forEach((opt, index) => {
-            const btn = document.createElement('button');
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(index);
-            optContainer.appendChild(btn);
+        data.opts.forEach((text, i) => {
+            const b = document.createElement('button');
+            b.className = 'opt-btn';
+            b.innerText = text;
+            b.onclick = () => check(i);
+            optEl.appendChild(b);
         });
     }
 
-    function checkAnswer(index) {
-        const currentQ = questions[currentIdx];
-        const buttons = optContainer.querySelectorAll('button');
-        buttons.forEach(b => b.disabled = true);
+    function check(idx) {
+        const data = quizData[currentQ];
+        const buttons = document.querySelectorAll('.opt-btn');
+        buttons.forEach(btn => btn.disabled = true);
 
-        feedback.style.display = 'block';
-        if (index === currentQ.correct) {
-            feedback.innerHTML = "<b>Correct!</b><br>" + currentQ.fact;
-            feedback.className = "correct";
+        if (idx === data.correct) {
+            expEl.innerHTML = "🌟 <b>EXCELLENT!</b><br>" + data.fact;
+            expEl.className = "success";
         } else {
-            feedback.innerHTML = "<b>Wrong!</b><br>" + currentQ.fact;
-            feedback.className = "wrong";
+            lives--;
+            updateLives();
+            expEl.innerHTML = "🚀 <b>MISSION HICCUP!</b><br>" + data.fact;
+            expEl.className = "fail";
+            if (lives <= 0) {
+                gameOver();
+                return;
+            }
         }
+        expEl.style.display = 'block';
         nextBtn.style.display = 'inline-block';
     }
 
+    function updateLives() {
+        livesEl.innerText = "LIVES: " + "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+    }
+
     nextBtn.onclick = () => {
-        currentIdx++;
-        if (currentIdx < questions.length) {
-            loadQuestion();
-        } else {
-            progress.style.width = "100%";
-            document.getElementById('game-box').innerHTML = "<h2>🏆 Mastery Achieved!</h2><p>You've completed the Force and Pressure challenge.</p><button onclick='location.reload()'>Restart Quiz</button>";
-        }
+        currentIdx = ++currentQ;
+        initGame();
     };
 
-    // Initialize the first question
-    loadQuestion();
+    function winGame() {
+        progress.style.width = "100%";
+        document.getElementById('game-container').innerHTML = `
+            <h1 style="color:var(--correct-green)">🏆 MISSION SUCCESS!</h1>
+            <p>You are now a certified Force & Pressure Master!</p>
+            <button class="opt-btn" onclick="location.reload()">PLAY AGAIN</button>
+        `;
+    }
+
+    function gameOver() {
+        document.getElementById('game-container').innerHTML = `
+            <h1 style="color:var(--wrong-red)">💀 MISSION FAILED</h1>
+            <p>Your ship ran out of energy. Return to base and try again!</p>
+            <button class="opt-btn" onclick="location.reload()">RESTART MISSION</button>
+        `;
+    }
+
+    // Start the engine
+    initGame();
 </script>
 
 </body>
