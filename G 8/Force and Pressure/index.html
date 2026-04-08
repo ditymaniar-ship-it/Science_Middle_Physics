@@ -24,26 +24,26 @@
             background: white; border-radius: 40px; padding: 30px;
             border: 6px solid #00d2ff; box-shadow: 0 0 25px #00d2ff;
             text-align: center; position: relative; color: #333;
-            max-height: 85vh; overflow-y: auto;
         }
         
-        .q-image { width: 100%; max-height: 150px; object-fit: contain; margin: 10px 0; border-radius: 10px; }
+        .q-image { width: 100%; max-height: 180px; object-fit: contain; margin: 15px 0; border-radius: 15px; border: 2px solid #eee; }
 
         .btn {
             background: linear-gradient(to right, #00d2ff, #9d50bb);
-            color: white; border: none; padding: 12px 30px;
-            border-radius: 50px; cursor: pointer; font-size: 1.1rem;
-            font-weight: bold; margin-top: 15px;
+            color: white; border: none; padding: 15px 40px;
+            border-radius: 50px; cursor: pointer; font-size: 1.2rem;
+            font-weight: bold; margin-top: 15px; transition: 0.3s;
         }
+        .btn:hover { transform: scale(1.1); box-shadow: 0 0 15px #00d2ff; }
 
         .opt {
-            display: block; width: 100%; padding: 10px; margin: 8px 0;
+            display: block; width: 100%; padding: 12px; margin: 10px 0;
             border: 2px solid #00d2ff; background: #f0faff;
-            border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
+            border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 1rem;
         }
         .opt:hover { background: #00d2ff; color: white; }
-        #stats { display: flex; justify-content: space-between; color: white; margin-bottom: 5px; font-weight: bold; }
-        .type-tag { font-size: 0.8rem; color: #9d50bb; font-weight: bold; text-transform: uppercase; }
+        #stats { display: flex; justify-content: space-between; color: white; margin-bottom: 8px; font-weight: bold; }
+        .type-tag { font-size: 0.9rem; color: #9d50bb; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -52,10 +52,10 @@
 
 <div id="container">
     <div id="start-ui" class="bubble">
-        <h2 style="color:#9d50bb; margin:0;">MISSION BRIEFING</h2>
-        <p id="f-text" style="font-size:1.1rem; margin:15px 0;"></p>
-        <div id="f-img-container"></div>
-        <button class="btn" onclick="handleNextFact()">Next Fact ➔</button>
+        <h2 id="f-head" style="color:#9d50bb; margin:0;">MISSION BRIEFING</h2>
+        <p id="f-text" style="font-size:1.1rem; margin:15px 0; font-weight:bold;"></p>
+        <img id="f-img" class="q-image" src="" style="display:none;">
+        <button id="fact-next-btn" class="btn" onclick="handleNextFact()">Start Briefing ➔</button>
     </div>
 
     <div id="game-ui" style="display:none;">
@@ -65,49 +65,51 @@
         </div>
         <div class="bubble">
             <div id="q-type" class="type-tag"></div>
-            <p id="q-text" style="font-size:1rem; margin:10px 0; font-weight:bold; text-align:left;"></p>
+            <p id="q-text" style="font-size:1.1rem; margin:10px 0; font-weight:bold; text-align:left;"></p>
             <div id="options"></div>
-            <p id="info" style="display:none; padding:10px; border-radius:10px; margin-top:10px; font-size:0.85rem;"></p>
+            <div id="info" style="display:none; padding:12px; border-radius:15px; margin-top:15px; font-size:0.9rem; font-weight:bold;"></div>
             <button id="cont-btn" class="btn" style="display:none;" onclick="loadNext()">CONTINUE ➔</button>
         </div>
     </div>
 </div>
 
 <script>
+    // 🎨 FACT DATA WITH REAL DIAGRAMS
     const facts = [
-        {c: "Pressure depends on Area. Small area = Big Pressure!", img: ""},
-        {c: "Liquid pressure pushes in all directions and gets stronger at the bottom!", img: "
-"},
-        {c: "Atmospheric pressure is the weight of air pressing down on us!", img: "
-
-[Image of atmospheric pressure layers]
-"}
+        {c: "Pressure depends on Area. Small area = HUGE Pressure!", img: "https://cdn.pixabay.com/photo/2014/04/03/10/01/thumb-309650_1280.png"},
+        {c: "Liquid pressure pushes harder the deeper you dive!", img: "https://cdn.pixabay.com/photo/2017/01/31/15/33/submarine-2025117_1280.png"},
+        {c: "Air pressure is the weight of miles of air pressing on you!", img: "https://cdn.pixabay.com/photo/2012/04/18/14/54/clouds-37255_1280.png"}
     ];
 
+    // 🧠 STORY-BASED QUESTION BANK
     const bank = {
         understanding: [
-            {q: "STORY: A student pushes a heavy box with 50N of force, but it stays perfectly still. Is a force being applied?", opts: ["No, force only exists during movement", "Yes, but it is balanced by friction", "The box has no mass"], ans: 1, why: "Balanced forces result in zero motion!"}
+            {q: "STORY: A student pushes a heavy box with 50N of force, but it stays perfectly still. Why isn't it moving?", opts: ["Force doesn't exist without motion", "The force is balanced by static friction", "The floor has no pressure"], ans: 1, why: "Balanced forces mean no change in motion!"}
         ],
         application: [
-            {q: "STORY: A circus performer must cross a muddy field. They have high heels and flat sneakers. Which should they wear to avoid sinking?", opts: ["High heels (better grip)", "Flat sneakers (higher area)", "Go barefoot"], ans: 1, why: "Flat sneakers spread the weight, reducing pressure on the mud."},
-            {q: "STORY: A chef finds that their blunt knife won't slice a tomato, but a sharp one does easily with the same force. Why?", opts: ["Sharp knives have more force", "Sharp edge has a tiny area creating high pressure", "Blunt knives are heavier"], ans: 1, why: "Pressure = Force / Area. Tiny area = Huge cutting pressure!"},
-            {q: "STORY: A porter is carrying a heavy 50kg box on his head. He places a round cloth ring (turbans) on his head first. Why?", opts: ["To keep his hair clean", "To increase contact area and lower pressure", "To balance the box better"], ans: 1, why: "The cloth ring spreads the load over a larger part of his head!"}
+            {q: "STORY: A chef finds that their blunt knife won't slice a tomato, but a sharp one does it easily. What's the secret?", opts: ["Sharp knives have 'Magic Force'", "The tiny edge area creates huge pressure", "Blunt knives are too light"], ans: 1, why: "Pressure = Force / Area. A tiny edge makes huge pressure!"},
+            {q: "STORY: A porter carries a heavy 50kg box but puts a round cloth ring on his head first. How does this help?", opts: ["It makes the box lighter", "It increases contact area to lower pressure", "It balances his hair"], ans: 1, why: "More area = Less pressure on his head!"}
         ],
         critical: [
-            {q: "STORY: You are designing a submarine to explore the Mariana Trench. Why must the bottom plates be 3x thicker than the top?", opts: ["To stop it from flipping", "Because water pressure is highest at the bottom", "To protect against sea monsters"], ans: 1, why: "Pressure increases with depth because more water weight is pressing down!"},
-            {q: "STORY: You take a bag of chips from the beach up to a high mountain peak. Suddenly, the bag puffs up like a balloon! Why?", opts: ["The air inside got hot", "External air pressure decreased at high altitude", "Gravity pulled the bag open"], ans: 1, why: "Higher up, the outside air is thinner, so the inside air pushes OUT harder!"}
+            {q: "STORY: Engineers building a deep-sea sub make the bottom plates much thicker than the top ones. Why?", opts: ["To keep it from floating", "Because water pressure is highest at the bottom", "To protect from sharks"], ans: 1, why: "Water pressure increases with depth!"},
+            {q: "STORY: You take a bag of chips from the beach up to a high mountain peak. The bag suddenly puffs up! Why?", opts: ["The air inside got hot", "External air pressure is lower at high altitudes", "Gravity pulled the bag"], ans: 1, why: "Thinner air outside lets the inside air push out more!"}
         ]
     };
 
     let fIdx = 0;
     let qIdx = 0;
     let hp = 3;
-    let sessionQuestions = [];
+    let sessionQs = [];
 
+    // 🚀 FIX: NEXT FACT LOGIC
     function handleNextFact() {
         if(fIdx < facts.length) {
+            document.getElementById('f-head').innerText = "BRIEFING: " + (fIdx + 1) + "/3";
             document.getElementById('f-text').innerText = facts[fIdx].c;
-            document.getElementById('f-img-container').innerText = facts[fIdx].img;
+            const img = document.getElementById('f-img');
+            img.src = facts[fIdx].img;
+            img.style.display = 'block';
+            document.getElementById('fact-next-btn').innerText = (fIdx === facts.length - 1) ? "Launch Mission! 🚀" : "Next Fact ➔";
             fIdx++;
         } else {
             startSession();
@@ -115,8 +117,7 @@
     }
 
     function startSession() {
-        // Pick 1 Understanding, 2 Application, 2 Critical
-        sessionQuestions = [
+        sessionQs = [
             bank.understanding[0],
             ...bank.application.sort(() => 0.5 - Math.random()).slice(0, 2),
             ...bank.critical.sort(() => 0.5 - Math.random()).slice(0, 2)
@@ -127,12 +128,11 @@
     }
 
     function loadNext() {
-        if(qIdx >= 5 || hp <= 0) {
-            const win = hp > 0;
-            document.getElementById('game-ui').innerHTML = `<div class='bubble'><h2>${win ? '🏆 MISSION CLEAR' : '💀 FAILED'}</h2><p>${win ? 'You are a Force Master!' : 'Return to training.'}</p><button class='btn' onclick='location.reload()'>RESTART</button></div>`;
+        if(qIdx >= 5) {
+            endGame(true);
             return;
         }
-        const data = sessionQuestions[qIdx];
+        const data = sessionQs[qIdx];
         document.getElementById('q-label').innerText = `Q: ${qIdx+1}/5`;
         document.getElementById('q-type').innerText = (qIdx === 0) ? "Understanding" : (qIdx < 3 ? "Application" : "Critical Thinking");
         document.getElementById('q-text').innerText = data.q;
@@ -146,16 +146,20 @@
             b.className = 'opt';
             b.innerText = o;
             b.onclick = () => {
+                document.querySelectorAll('.opt').forEach(btn => btn.disabled = true);
                 const info = document.getElementById('info');
                 info.style.display = 'block';
                 if(i === data.ans) {
-                    info.innerHTML = "✅ " + data.why;
+                    info.innerHTML = "✅ CORRECT! " + data.why;
                     info.style.background = "#d4edda";
+                    info.style.color = "#155724";
                 } else {
                     hp--;
                     document.getElementById('hp').innerText = "LIVES: " + "❤️".repeat(hp);
-                    info.innerHTML = "❌ " + data.why;
+                    info.innerHTML = "❌ OOPS! " + data.why;
                     info.style.background = "#f8d7da";
+                    info.style.color = "#721c24";
+                    if(hp <= 0) { endGame(false); return; }
                 }
                 document.getElementById('cont-btn').style.display = 'inline-block';
                 qIdx++;
@@ -163,6 +167,17 @@
             optBox.appendChild(b);
         });
     }
+
+    function endGame(win) {
+        document.getElementById('game-ui').innerHTML = `
+            <div class='bubble'>
+                <h2>${win ? '🏆 MISSION CLEAR' : '💀 SYSTEM CRASH'}</h2>
+                <p style='font-weight:bold;'>${win ? 'You are a certified Force & Pressure Master!' : 'You ran out of lives. Return to base for retraining.'}</p>
+                <button class='btn' onclick='location.reload()'>RESTART MISSION</button>
+            </div>`;
+    }
+
+    // Initial trigger
     handleNextFact();
 </script>
 </body>
