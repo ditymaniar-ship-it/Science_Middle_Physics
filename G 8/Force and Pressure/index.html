@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Force & Pressure: Cadet Challenge</title>
+    <title>Force & Pressure: The Master Lab</title>
     <style>
         :root {
             --space-blue: #1a1a2e;
@@ -15,193 +15,72 @@
         body { 
             font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; 
             background: linear-gradient(135deg, var(--space-blue), #16213e);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;
         }
         #game-container {
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 0 20px var(--neon-blue);
-            width: 90%;
-            max-width: 550px;
-            text-align: center;
-            position: relative;
-            border: 4px solid var(--neon-blue);
+            background: rgba(255, 255, 255, 0.95); color: #333; padding: 30px; border-radius: 25px;
+            box-shadow: 0 0 25px var(--neon-blue); width: 95%; max-width: 650px; text-align: center; border: 4px solid var(--neon-blue);
         }
         .header-info { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: var(--space-blue); }
         .progress-container { height: 12px; background: #eee; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
         #progress-bar { height: 100%; background: linear-gradient(to right, var(--neon-blue), var(--neon-purple)); width: 0%; transition: 0.5s; }
-        h2 { margin-top: 0; color: var(--neon-purple); text-transform: uppercase; letter-spacing: 1px; }
-        .question-text { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; min-height: 60px; }
-        .options-grid { display: grid; gap: 12px; }
+        h2 { margin-top: 0; color: var(--neon-purple); text-transform: uppercase; font-size: 1.4rem; }
+        .question-text { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; font-weight: 500; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 10px; border-left: 5px solid var(--neon-purple); }
+        .options-grid { display: grid; gap: 10px; }
         .opt-btn { 
-            padding: 15px; border: 2px solid #ddd; background: white; border-radius: 15px; 
-            cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s;
+            padding: 12px; border: 2px solid #ddd; background: white; border-radius: 12px; 
+            cursor: pointer; font-size: 0.95rem; font-weight: bold; transition: 0.2s; text-align: left;
         }
-        .opt-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.1); border-color: var(--neon-blue); }
-        #explanation { 
-            margin-top: 20px; padding: 15px; border-radius: 15px; display: none; 
-            animation: slideUp 0.4s ease; font-size: 0.95rem; line-height: 1.4;
-        }
+        .opt-btn:hover { border-color: var(--neon-blue); background: #f0faff; transform: scale(1.01); }
+        #explanation { margin-top: 20px; padding: 15px; border-radius: 15px; display: none; font-size: 0.95rem; text-align: left; }
         .success { background: #d4edda; color: #155724; border: 2px solid var(--correct-green); }
         .fail { background: #f8d7da; color: #721c24; border: 2px solid var(--wrong-red); }
-        #next-btn { 
-            margin-top: 20px; padding: 12px 30px; border: none; border-radius: 50px;
-            background: var(--neon-purple); color: white; font-size: 1.1rem; cursor: pointer; display: none;
+        #next-btn, #start-btn { 
+            margin-top: 20px; padding: 12px 40px; border: none; border-radius: 50px;
+            background: var(--neon-purple); color: white; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fact-card { background: #eef2f3; padding: 20px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--neon-blue); text-align: left; display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div class="header-info">
-        <span id="level-display">LEVEL: 1/5</span>
-        <span id="lives-display">LIVES: ❤️❤️❤️</span>
+    <div id="learning-screen">
+        <h2>🔬 Pre-Mission Lab</h2>
+        <p>Review these core concepts to unlock the game:</p>
+        <div class="fact-card" id="f1" style="display:block;"><b>Force & Motion:</b> Force is a push or pull. Balanced forces (equal and opposite) result in no motion.</div>
+        <div class="fact-card" id="f2"><b>The Area Effect:</b> Pressure = Force ÷ Area. Small area creates high pressure; large area creates low pressure.</div>
+        <div class="fact-card" id="f3"><b>Fluid Pressure:</b> Liquids exert more pressure as depth increases. Atmospheric pressure decreases as altitude increases.</div>
+        <button id="start-btn" onclick="advanceFact()">Next Fact ➔</button>
     </div>
-    <div class="progress-container"><div id="progress-bar"></div></div>
-    
-    <h2 id="title">Science Lab</h2>
-    <p class="question-text" id="question">Initializing systems...</p>
-    
-    <div class="options-grid" id="options"></div>
-    
-    <div id="explanation"></div>
-    <button id="next-btn">CONTINUE →</button>
+
+    <div id="game-screen" style="display:none;">
+        <div class="header-info">
+            <span id="level-display">Q: 1/10</span>
+            <span id="lives-display">LIVES: ❤️❤️❤️</span>
+        </div>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        <h2 id="title">Category: Loading...</h2>
+        <p class="question-text" id="question">Loading mission...</p>
+        <div class="options-grid" id="options"></div>
+        <div id="explanation"></div>
+        <button id="next-btn" style="display:none;" onclick="nextQuestion()">CONTINUE ➔</button>
+    </div>
 </div>
 
 <script>
-    const quizData = [
-        {
-            level: "Level 1: Understanding",
-            q: "A circus performer is deciding which shoes to wear while walking across a soft, muddy field. To avoid sinking, which option should they choose?",
-            opts: ["High-heeled boots; they grip better", "Flat-soled sneakers; they spread the weight", "Barefoot; for better balance"],
-            correct: 1,
-            fact: "<b>Physics Secret:</b> Pressure = Force ÷ Area. By using flat soles, you increase the surface area, which lowers the pressure so you don't sink!"
-        },
-        {
-            level: "Level 2: Application",
-            q: "You use a sharp knife and a blunt knife to cut an apple with the same 10N force. Why does the sharp knife cut through easily?",
-            opts: ["The sharp knife creates more force", "The tiny contact area creates huge pressure", "The blunt knife creates too much friction"],
-            correct: 1,
-            fact: "<b>Physics Secret:</b> Because the edge is so thin (small area), the pressure becomes strong enough to slice through the apple's skin easily."
-        },
-        {
-            level: "Level 3: Application",
-            q: "Engineers are building a deep-sea submarine. Why does the hull need to be much thicker at the bottom than at the top?",
-            opts: ["To keep the sub from flipping over", "Because liquid pressure increases with depth", "To protect against deep-sea creatures"],
-            correct: 1,
-            fact: "<b>Physics Secret:</b> The deeper you go, the more water is stacked above you. All that weight creates massive pressure at the bottom!"
-        },
-        {
-            level: "Level 4: Critical Thinking",
-            q: "You poke holes in a water bottle and it starts leaking. If you drop the bottle from a building, what happens to the leak while it's falling?",
-            opts: ["It shoots out faster", "It stops leaking entirely", "It leaks at the exact same speed"],
-            correct: 1,
-            fact: "<b>Physics Secret:</b> In free-fall, everything is 'weightless.' Since gravity isn't 'pushing' the water down into the bottle, it stops leaking!"
-        },
-        {
-            level: "Level 5: Critical Thinking",
-            q: "If you take a sealed bag of chips to the top of a high mountain, the bag 'puffs up' like a balloon. Why?",
-            opts: ["The air inside gets hot and expands", "External atmospheric pressure decreases", "Gravity is weaker at the top"],
-            correct: 1,
-            fact: "<b>Physics Secret:</b> Higher up, the outside air is 'thinner.' The air inside the bag pushes out harder than the mountain air can push back!"
-        }
-    ];
-
-    let currentQ = 0;
-    let lives = 3;
-
-    const qEl = document.getElementById('question');
-    const optEl = document.getElementById('options');
-    const expEl = document.getElementById('explanation');
-    const nextBtn = document.getElementById('next-btn');
-    const progress = document.getElementById('progress-bar');
-    const livesEl = document.getElementById('lives-display');
-    const levelEl = document.getElementById('level-display');
-
-    function initGame() {
-        if (currentQ >= quizData.length) {
-            winGame();
-            return;
-        }
-        
-        const data = quizData[currentQ];
-        levelEl.innerText = `LEVEL: ${currentQ + 1}/5`;
-        qEl.innerText = data.q;
-        document.getElementById('title').innerText = data.level;
-        expEl.style.display = 'none';
-        nextBtn.style.display = 'none';
-        optEl.innerHTML = '';
-        progress.style.width = (currentQ / quizData.length * 100) + "%";
-
-        data.opts.forEach((text, i) => {
-            const b = document.createElement('button');
-            b.className = 'opt-btn';
-            b.innerText = text;
-            b.onclick = () => check(i);
-            optEl.appendChild(b);
-        });
-    }
-
-    function check(idx) {
-        const data = quizData[currentQ];
-        const buttons = document.querySelectorAll('.opt-btn');
-        buttons.forEach(btn => btn.disabled = true);
-
-        if (idx === data.correct) {
-            expEl.innerHTML = "🌟 <b>EXCELLENT!</b><br>" + data.fact;
-            expEl.className = "success";
-        } else {
-            lives--;
-            updateLives();
-            expEl.innerHTML = "🚀 <b>MISSION HICCUP!</b><br>" + data.fact;
-            expEl.className = "fail";
-            if (lives <= 0) {
-                gameOver();
-                return;
-            }
-        }
-        expEl.style.display = 'block';
-        nextBtn.style.display = 'inline-block';
-    }
-
-    function updateLives() {
-        livesEl.innerText = "LIVES: " + "❤️".repeat(lives) + "🖤".repeat(3 - lives);
-    }
-
-    nextBtn.onclick = () => {
-        currentIdx = ++currentQ;
-        initGame();
-    };
-
-    function winGame() {
-        progress.style.width = "100%";
-        document.getElementById('game-container').innerHTML = `
-            <h1 style="color:var(--correct-green)">🏆 MISSION SUCCESS!</h1>
-            <p>You are now a certified Force & Pressure Master!</p>
-            <button class="opt-btn" onclick="location.reload()">PLAY AGAIN</button>
-        `;
-    }
-
-    function gameOver() {
-        document.getElementById('game-container').innerHTML = `
-            <h1 style="color:var(--wrong-red)">💀 MISSION FAILED</h1>
-            <p>Your ship ran out of energy. Return to base and try again!</p>
-            <button class="opt-btn" onclick="location.reload()">RESTART MISSION</button>
-        `;
-    }
-
-    // Start the engine
-    initGame();
-</script>
-
-</body>
-</html>
+    const bank = [
+        { cat: "Understanding", q: "A student pushes a heavy box but it does not move. What is happening?", opts: ["No force is being applied", "The applied force is balanced by static friction", "Gravity is pushing the box sideways", "Force only exists if the box moves"], correct: "The applied force is balanced by static friction", fact: "Force is applied, but the net force is zero because friction pulls back equally!" },
+        { cat: "Understanding", q: "Two students push a table from opposite sides with equal force. What is the result?", opts: ["The table moves toward the right", "The table stays still due to balanced forces", "The table accelerates", "The forces add together to move it faster"], correct: "The table stays still due to balanced forces", fact: "Equal and opposite forces result in a Net Force of zero." },
+        { cat: "Understanding", q: "Why do camels have broad feet compared to deer?", opts: ["To run faster", "To increase area and reduce pressure on sand", "To keep their feet cool", "To decrease their body weight"], correct: "To increase area and reduce pressure on sand", fact: "Broad feet spread the weight, preventing the camel from sinking." },
+        { cat: "Application", q: "A balloon expands when air is blown into it. Why?", opts: ["Air particles hit the walls exerting pressure", "The rubber becomes lighter", "Gravity pulls the air inside", "The air inside turns into a liquid"], correct: "Air particles hit the walls exerting pressure", fact: "Gas particles collide with the surface, creating outward pressure." },
+        { cat: "Application", q: "Why do mountaineers carry oxygen cylinders at high altitudes?", opts: ["Air pressure is too high to breathe", "Atmospheric pressure and oxygen levels decrease", "Oxygen cylinders make them lighter", "Air is only present at sea level"], correct: "Atmospheric pressure and oxygen levels decrease", fact: "At high altitudes, air is thinner and exerts less pressure." },
+        { cat: "Application", q: "A sharp knife cuts easier than a blunt one because:", opts: ["It has more mass", "It applies force over a smaller area", "It creates a magnetic force", "It reduces the weight of the vegetable"], correct: "It applies force over a smaller area", fact: "Small area = High Pressure ($P = F/A$)." },
+        { cat: "Application", q: "A girl weighing 500N stands in high heels. How does this affect the ground?", opts: ["Pressure is lower than in flat shoes", "Pressure is significantly higher due to small area", "The force on the ground increases to 1000N", "The ground exerts no pressure back"], correct: "Pressure is significantly higher due to small area", fact: "The weight is concentrated on a tiny point, creating huge pressure." },
+        { cat: "Application", q: "A porter uses a cloth ring on his head to carry a heavy load. This:", opts: ["Increases the weight", "Increases contact area to reduce pressure", "Reduces the force of gravity", "Makes the load slippery"], correct: "Increases contact area to reduce pressure", fact: "Spreading the force over the cloth ring makes the pressure on the head lower." },
+        { cat: "Application", q: "Why are submarine hulls built thicker at the bottom?", opts: ["To balance the submarine", "Water pressure increases with depth", "To protect from sand", "To allow the sub to float faster"], correct: "Water pressure increases with depth", fact: "The deeper the sub goes, the more water weight presses against the hull." },
+        { cat: "Application", q: "Why do farm tractors have wider tires than cars?", opts: ["To go faster on roads", "To reduce pressure and avoid sinking in mud", "To save fuel", "To increase the force of the engine"], correct: "To reduce pressure and avoid sinking in mud", fact: "Wider tires spread the heavy tractor's weight over more soil." },
+        { cat: "HOTs", q: "During a storm, why can strong winds blow off roofs?", opts: ["Gravity disappears", "High-speed wind creates low pressure above the roof", "The wind pulls the roof down", "Pressure inside the house becomes zero"], correct: "High-speed wind creates low pressure above the roof", fact: "Fast wind creates low pressure; the higher pressure inside the house pushes the roof UP!" },
+        { cat: "HOTs", q: "If atmospheric pressure suddenly disappeared, what would happen?", opts: ["Liquids would boil/evaporate instantly", "Everything would become weightless", "Gravity would double", "Plants would grow faster"], correct: "Liquids would boil/evaporate instantly", fact: "Without air pressure 'holding' them down, liquid molecules escape into gas." },
+        { cat: "HOTs", q: "Why are dam walls thicker at the base than at the top?", opts: ["To look like a pyramid", "To withstand higher
