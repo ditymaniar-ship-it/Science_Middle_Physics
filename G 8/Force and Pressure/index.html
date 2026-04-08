@@ -6,228 +6,178 @@
     <title>Force & Pressure: Nebula Quest</title>
     <style>
         :root {
-            --bubble-bg: rgba(255, 255, 255, 0.9);
             --neon-blue: #00d2ff;
             --neon-purple: #9d50bb;
-            --space-dark: #050510;
+            --bg-dark: #050510;
         }
 
-        /* Animated Space Background */
+        /* 🌌 ANIMATED SPACE BACKGROUND */
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: var(--space-dark);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            margin: 0; padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
             background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; color: white;
         }
 
-        /* Moving Stars Effect */
-        body::before {
-            content: "";
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background-image: radial-gradient(white 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: moveStars 100s linear infinite;
-            opacity: 0.3;
+        /* Moving Starfield */
+        .stars {
+            position: absolute; top: 0; left: 0; width: 200%; height: 200%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            animation: move 100s linear infinite; opacity: 0.5; z-index: 1;
         }
+        @keyframes move { from {transform: translate(0,0);} to {transform: translate(-50%, -50%);} }
 
-        @keyframes moveStars {
-            from { transform: translate(0, 0); }
-            to { transform: translate(-50%, -50%); }
-        }
+        #game-container { position: relative; z-index: 10; width: 90%; max-width: 600px; }
 
-        #game-container {
-            position: relative;
-            z-index: 10;
-            width: 90%;
-            max-width: 600px;
-            perspective: 1000px;
-        }
-
-        /* The Bubble/Cloud Style */
-        .bubble {
-            background: var(--bubble-bg);
-            border-radius: 50px 50px 50px 5px; /* Cloud-like shape */
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,210,255,0.3);
-            border: 4px solid var(--neon-blue);
+        /* ☁️ CLOUD BUBBLE DESIGN */
+        .cloud-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50px;
+            padding: 40px;
             color: #333;
+            box-shadow: 0 0 30px var(--neon-blue);
+            border: 5px solid var(--neon-blue);
             text-align: center;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
+            animation: pop 0.4s ease-out;
         }
-
-        /* Bubble Tail */
-        .bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 30px;
-            border-width: 20px 20px 0;
-            border-style: solid;
+        .cloud-bubble::after {
+            content: ''; position: absolute; bottom: -30px; left: 50px;
+            border-width: 30px 30px 0; border-style: solid;
             border-color: var(--neon-blue) transparent;
         }
 
-        @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        @keyframes pop { 0% {transform: scale(0.8); opacity: 0;} 100% {transform: scale(1); opacity: 1;} }
 
-        h2 { color: var(--neon-purple); margin-top: 0; text-transform: uppercase; font-size: 1.5rem; }
+        h2 { color: var(--neon-purple); margin: 0 0 15px 0; text-transform: uppercase; }
+        .main-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; line-height: 1.4; }
 
-        .fact-text { font-size: 1.2rem; line-height: 1.4; margin: 20px 0; font-weight: bold; }
-
-        /* Game Buttons */
+        /* 🔘 BUTTONS */
         .btn {
             background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: 0.3s;
+            color: white; border: none; padding: 15px 30px;
+            font-size: 1.1rem; border-radius: 50px; cursor: pointer;
+            font-weight: bold; transition: 0.3s; margin-top: 10px;
         }
+        .btn:hover { transform: scale(1.1); box-shadow: 0 0 15px var(--neon-blue); }
 
-        .btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--neon-blue); }
-
-        /* Progress Bar */
-        .progress-box { width: 100%; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-bottom: 20px; }
-        #progress-fill { height: 100%; background: var(--neon-blue); width: 0%; border-radius: 5px; transition: 0.5s; }
-
-        .opt-grid { display: grid; gap: 10px; margin-top: 20px; }
-        .opt-btn { 
-            background: white; border: 2px solid var(--neon-blue); padding: 12px; 
-            border-radius: 15px; cursor: pointer; font-family: inherit; font-weight: bold;
-            transition: 0.2s; text-align: left;
+        .opt-grid { display: grid; gap: 10px; margin-top: 15px; }
+        .opt-btn {
+            background: #f0f8ff; border: 2px solid var(--neon-blue);
+            padding: 12px; border-radius: 15px; cursor: pointer;
+            font-weight: bold; font-family: inherit; transition: 0.2s;
         }
-        .opt-btn:hover { background: #e0f7ff; }
+        .opt-btn:hover { background: var(--neon-blue); color: white; }
 
-        .header-stats { display: flex; justify-content: space-between; color: white; margin-bottom: 10px; font-weight: bold; }
+        #stats { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
+        #feedback { margin-top: 15px; padding: 10px; border-radius: 10px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
+<div class="stars"></div>
+
 <div id="game-container">
-    <div id="intro-screen" class="bubble">
-        <h2 id="fact-title">🚀 Lab Fact #1</h2>
-        <p class="fact-text" id="fact-content">Force is a push or pull. Balanced forces mean no movement!</p>
-        <button class="btn" id="fact-btn" onclick="nextFact()">Next Fact ➔</button>
+    <div id="intro-box" class="cloud-bubble">
+        <h2 id="fact-title">🚀 MISSION FACT #1</h2>
+        <p id="fact-text" class="main-text">Force is a push or pull. If forces are equal on both sides, nothing moves!</p>
+        <button class="btn" onclick="nextFact()">Next Fact ➔</button>
     </div>
 
-    <div id="game-screen" style="display:none;">
-        <div class="header-stats">
-            <span id="q-count">Q: 1/10</span>
-            <span id="lives">LIVES: ❤️❤️❤️</span>
+    <div id="game-box" style="display:none;">
+        <div id="stats">
+            <span id="q-num">Question: 1/5</span>
+            <span id="lives-count">LIVES: ❤️❤️❤️</span>
         </div>
-        <div class="progress-box"><div id="progress-fill"></div></div>
-        
-        <div class="bubble">
-            <h2 id="cat-title">Application</h2>
-            <p id="q-text" class="fact-text">Loading...</p>
-            <div id="options" class="opt-grid"></div>
-            <p id="feedback" style="display:none; font-size: 0.9rem; padding: 10px; border-radius: 10px; margin-top: 10px;"></p>
-            <button id="continue-btn" class="btn" style="display:none; margin-top: 15px;" onclick="loadNextQ()">Continue ➔</button>
+        <div class="cloud-bubble">
+            <h2 id="cat-label">Application</h2>
+            <p id="q-text" class="main-text">Question text goes here...</p>
+            <div id="options-area" class="opt-grid"></div>
+            <div id="feedback"></div>
+            <button id="next-q-btn" class="btn" style="display:none;" onclick="loadQuestion()">CONTINUE ➔</button>
         </div>
     </div>
 </div>
 
 <script>
-    const facts = [
-        { t: "🚀 Lab Fact #1", c: "Force is a push or pull. Balanced forces mean no movement!" },
-        { t: "☁️ Lab Fact #2", c: "Pressure = Force ÷ Area. Smaller area creates HUGE pressure!" },
-        { t: "🌊 Lab Fact #3", c: "Liquid pressure increases the deeper you go. Submarines must be thick!" }
+    // 🧠 DATA BANK
+    const introFacts = [
+        { t: "🚀 MISSION FACT #1", c: "Force is a push or pull. If forces are equal on both sides, nothing moves!" },
+        { t: "☁️ MISSION FACT #2", c: "Pressure = Force ÷ Area. Small points (like nails) create HUGE pressure!" },
+        { t: "🌊 MISSION FACT #3", c: "Liquid pressure gets stronger the deeper you go. Submarines must be tough!" }
     ];
 
-    const bank = [
-        { cat: "Understanding", q: "A student pushes a heavy box but it doesn't move. Is force applied?", opts: ["Yes, but it's balanced by friction", "No force is present", "Gravity is pushing it sideways"], correct: 0, f: "Static friction cancels the push!" },
-        { cat: "Application", q: "Why do camels have broad feet?", opts: ["To look tall", "To increase area and reduce pressure on sand", "To walk faster"], correct: 1, f: "Broad feet prevent sinking in soft sand." },
-        { cat: "HOTS", q: "Why are dam walls thicker at the bottom?", opts: ["To save bricks", "Because water pressure increases with depth", "To stop fish"], correct: 1, f: "Water weight creates massive pressure at the base." },
-        { cat: "Application", q: "A sharp knife cuts better because:", opts: ["It is heavier", "Small area creates high pressure", "It has more force"], correct: 1, f: "Area is tiny, so pressure is giant!" },
-        { cat: "HOTS", q: "What happens to liquids if atmospheric pressure disappeared?", opts: ["They freeze", "They boil/evaporate instantly", "They turn blue"], correct: 1, f: "Air pressure 'holds' liquid molecules together." }
+    const quizBank = [
+        { c: "Understanding", q: "A student pushes a heavy box but it doesn't move. Why?", o: ["No force applied", "Balanced by friction", "Gravity is sideways"], a: 1, f: "Friction cancels your push!" },
+        { c: "Application", q: "Why do camels have broad feet?", o: ["To run fast", "To reduce pressure on sand", "To look tall"], a: 1, f: "Large area = Low pressure!" },
+        { c: "HOTS", q: "Why are dam walls thicker at the bottom?", o: ["To save stone", "Water pressure increases with depth", "For fish"], a: 1, f: "Deep water is very heavy!" },
+        { c: "Application", q: "A sharp knife cuts better than a blunt one because:", o: ["It's heavier", "Small area = High pressure", "It's magnetic"], a: 1, f: "The thin edge concentrates all the force!" },
+        { c: "HOTS", q: "What happens to water if air pressure disappeared?", o: ["It freezes", "It boils/evaporates", "It turns green"], a: 1, f: "Air pressure holds water together!" }
     ];
 
-    let currentFactIdx = 0;
-    let currentQIdx = 0;
+    let factIdx = 0;
+    let quizIdx = 0;
     let lives = 3;
-    let activeBank = [];
 
     function nextFact() {
-        currentFactIdx++;
-        if(currentFactIdx < facts.length) {
-            document.getElementById('fact-title').innerText = facts[currentFactIdx].t;
-            document.getElementById('fact-content').innerText = facts[currentFactIdx].c;
-            if(currentFactIdx === facts.length - 1) document.getElementById('fact-btn').innerText = "Launch Mission! 🚀";
+        factIdx++;
+        if(factIdx < introFacts.length) {
+            document.getElementById('fact-title').innerText = introFacts[factIdx].t;
+            document.getElementById('fact-text').innerText = introFacts[factIdx].c;
         } else {
-            document.getElementById('intro-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            activeBank = bank.sort(() => 0.5 - Math.random()).slice(0, 5);
-            showQuestion();
+            document.getElementById('intro-box').style.display = 'none';
+            document.getElementById('game-box').style.display = 'block';
+            loadQuestion();
         }
     }
 
-    function showQuestion() {
-        const q = activeBank[currentQIdx];
-        document.getElementById('q-count').innerText = `Q: ${currentQIdx + 1}/5`;
-        document.getElementById('cat-title').innerText = q.cat;
-        document.getElementById('q-text').innerText = q.q;
-        document.getElementById('feedback').style.display = 'none';
-        document.getElementById('continue-btn').style.display = 'none';
-        document.getElementById('progress-fill').style.width = (currentQIdx / 5 * 100) + "%";
+    function loadQuestion() {
+        if(quizIdx >= 5) {
+            document.getElementById('game-box').innerHTML = "<div class='cloud-bubble'><h2>🏆 SUCCESS!</h2><p class='main-text'>Mission Complete! You are a Physics Pro!</p><button class='btn' onclick='location.reload()'>RESTART</button></div>";
+            return;
+        }
         
-        const optContainer = document.getElementById('options');
-        optContainer.innerHTML = '';
-        q.opts.forEach((opt, i) => {
+        const data = quizBank[quizIdx];
+        document.getElementById('q-num').innerText = `Question: ${quizIdx + 1}/5`;
+        document.getElementById('cat-label').innerText = data.c;
+        document.getElementById('q-text').innerText = data.q;
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('next-q-btn').style.display = 'none';
+        
+        const area = document.getElementById('options-area');
+        area.innerHTML = '';
+        data.o.forEach((opt, i) => {
             const b = document.createElement('button');
             b.className = 'opt-btn';
             b.innerText = opt;
-            b.onclick = () => checkAns(i);
-            optContainer.appendChild(b);
+            b.onclick = () => check(i);
+            area.appendChild(b);
         });
     }
 
-    function checkAns(idx) {
-        const q = activeBank[currentQIdx];
-        const feedback = document.getElementById('feedback');
+    function check(idx) {
+        const data = quizBank[quizIdx];
+        const fb = document.getElementById('feedback');
         document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-        
-        if(idx === q.correct) {
-            feedback.innerHTML = "🌟 <b>Correct!</b> " + q.f;
-            feedback.style.background = "#d4edda";
-            feedback.style.color = "#155724";
+
+        fb.style.display = 'block';
+        if(idx === data.a) {
+            fb.innerHTML = "✅ CORRECT! " + data.f;
+            fb.style.background = "#d4edda";
+            quizIdx++;
         } else {
             lives--;
-            document.getElementById('lives').innerText = "LIVES: " + "❤️".repeat(lives) + "🖤".repeat(3-lives);
-            feedback.innerHTML = "❌ <b>Wrong!</b> " + q.f;
-            feedback.style.background = "#f8d7da";
-            feedback.style.color = "#721c24";
-            if(lives <= 0) { gameOver(); return; }
+            document.getElementById('lives-count').innerText = "LIVES: " + "❤️".repeat(lives);
+            fb.innerHTML = "❌ WRONG! " + data.f;
+            fb.style.background = "#f8d7da";
+            if(lives <= 0) {
+                document.getElementById('game-box').innerHTML = "<div class='cloud-bubble'><h2>💀 FAILED</h2><p class='main-text'>Out of lives! Return to base.</p><button class='btn' onclick='location.reload()'>RETRY</button></div>";
+                return;
+            }
+            quizIdx++;
         }
-        feedback.style.display = 'block';
-        document.getElementById('continue-btn').style.display = 'inline-block';
-    }
-
-    function loadNextQ() {
-        currentQIdx++;
-        if(currentQIdx < activeBank.length) showQuestion();
-        else winGame();
-    }
-
-    function winGame() {
-        document.getElementById('game-screen').innerHTML = `<div class="bubble"><h2>🏆 MISSION SUCCESS!</h2><p>You are a Physics Master!</p><button class="btn" onclick="location.reload()">PLAY AGAIN</button></div>`;
-    }
-
-    function gameOver() {
-        document.getElementById('game-screen').innerHTML = `<div class="bubble"><h2>💀 SYSTEM FAILURE</h2><p>You ran out of lives!</p><button class="btn" onclick="location.reload()">RESTART</button></div>`;
+        document.getElementById('next-q-btn').style.display = 'inline-block';
     }
 </script>
 </body>
