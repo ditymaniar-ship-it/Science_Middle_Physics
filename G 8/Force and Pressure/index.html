@@ -3,112 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Force & Pressure: The Lab Challenge</title>
+    <title>Force & Pressure Quiz</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --light: #ecf0f1;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        #game-box { background: white; color: #333; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 600px; text-align: center; }
-        .progress-bar { height: 10px; background: #ddd; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
-        #progress { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; }
-        h1 { font-size: 1.5rem; color: var(--primary); }
-        .question { font-size: 1.2rem; margin-bottom: 20px; font-weight: 600; }
-        .options { display: grid; gap: 10px; }
-        button { padding: 15px; border: 2px solid var(--accent); background: white; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #e74c3c; }
+        body { font-family: sans-serif; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        #game-box { background: white; color: #333; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; text-align: center; }
+        .progress-bar { height: 10px; background: #ddd; border-radius: 5px; margin-bottom: 20px; }
+        #progress { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; border-radius: 5px;}
+        .options { display: grid; gap: 10px; margin-top: 20px; }
+        button { padding: 12px; border: 2px solid var(--accent); background: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
         button:hover { background: var(--accent); color: white; }
-        #feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; font-size: 0.9rem; line-height: 1.4; }
+        #feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; font-size: 0.9rem; }
         .correct { background: #d4edda; color: #155724; display: block !important; }
         .wrong { background: #f8d7da; color: #721c24; display: block !important; }
-        #next-btn { margin-top: 15px; background: var(--primary); color: white; border: none; padding: 10px 20px; display: none; }
+        #next-btn { margin-top: 15px; background: var(--primary); color: white; border: none; padding: 10px 20px; display: none; cursor: pointer; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div id="game-box">
     <div class="progress-bar"><div id="progress"></div></div>
-    <h1 id="level-title">Level 1: The Foundation</h1>
-    <p class="question" id="q-text">Loading question...</p>
+    <h2 id="level-title">Level 1</h2>
+    <p id="q-text">Question will appear here...</p>
     <div class="options" id="opt-container"></div>
     <div id="feedback"></div>
-    <button id="next-btn" onclick="nextQuestion()">Next Level →</button>
+    <button id="next-btn">Next Level →</button>
 </div>
 
 <script>
     const questions = [
         {
-            level: "Level 1: Understanding",
+            title: "Level 1: Understanding",
             q: "Which shoes should a performer wear to avoid sinking in soft mud?",
             options: ["High-heeled boots", "Flat-soled sneakers", "Barefoot"],
             correct: 1,
-            fact: "<b>Why?</b> Pressure = Force / Area. Flat soles increase the area, spreading your weight out and reducing the pressure on the ground."
+            fact: "Pressure = Force / Area. Flat soles increase the area, reducing the pressure on the ground."
         },
         {
-            level: "Level 2: Application",
-            q: "You apply 10N of force to a sharp knife and a blunt knife. Why does the sharp one cut easier?",
-            options: ["It creates more force", "The smaller area creates higher pressure", "It cancels out gravity"],
+            title: "Level 2: Application",
+            q: "Why does a sharp knife cut easier than a blunt one if force is the same?",
+            options: ["It creates more force", "The smaller area creates higher pressure", "It reduces gravity"],
             correct: 1,
-            fact: "<b>Why?</b> Pressure is inversely proportional to area ($P = F/A$). A tiny sharp edge concentrates the force into massive pressure!"
+            fact: "A sharp edge has a tiny surface area. This concentrates the force into much higher pressure!"
         },
         {
-            level: "Level 3: Application",
+            title: "Level 3: Application",
             q: "Why are submarine hulls built thicker at the bottom than the top?",
-            options: ["To balance the weight", "Because liquid pressure increases with depth", "To stop it from floating too fast"],
+            options: ["To balance weight", "Liquid pressure increases with depth", "To stop it from floating"],
             correct: 1,
-            fact: "<b>Why?</b> The deeper you go, the more water is piled on top of you. That extra weight increases the pressure significantly."
+            fact: "The deeper you go, the more water is above you, pressing down with more weight."
         },
         {
-            level: "Level 4: Critical Thinking",
-            q: "A bottle with holes is leaking water. If you drop it (free-fall), what happens to the leak?",
-            options: ["It leaks faster", "It stops leaking entirely", "It leaks only from the top"],
+            title: "Level 4: Critical Thinking",
+            q: "If a leaking water bottle is dropped (free-fall), what happens to the leak?",
+            options: ["It leaks faster", "It stops leaking entirely", "It leaks at the same speed"],
             correct: 1,
-            fact: "<b>Why?</b> In free-fall, the water and bottle fall at the same speed. Gravity no longer 'presses' the water against the walls."
+            fact: "In free-fall, the water and bottle fall together. Gravity no longer 'pushes' the water out of the holes."
         },
         {
-            level: "Level 5: The Master Riddle",
-            q: "Why does a bag of chips expand (puff up) at the top of a mountain?",
-            options: ["The air inside gets hotter", "External atmospheric pressure decreases", "Gravity gets stronger"],
+            title: "Level 5: Critical Thinking",
+            q: "Why does a bag of chips puff up at the top of a high mountain?",
+            options: ["Air inside gets hot", "External atmospheric pressure decreases", "Gravity is weaker"],
             correct: 1,
-            fact: "<b>Why?</b> High up, the air is 'thinner' (lower pressure). The air inside the bag pushes out harder than the mountain air pushes back!"
+            fact: "At high altitudes, the outside air is 'thinner'. The air inside the bag pushes out harder than the outside air pushes back."
         }
     ];
 
     let currentIdx = 0;
 
-    function loadQ() {
-        const q = questions[currentIdx];
-        document.getElementById('level-title').innerText = q.level;
-        document.getElementById('q-text').innerText = q.q;
-        document.getElementById('feedback').style.display = 'none';
-        document.getElementById('next-btn').style.display = 'none';
-        document.getElementById('progress').style.width = (currentIdx / questions.length) * 100 + "%";
-        
-        const container = document.getElementById('opt-container');
-        container.innerHTML = "";
-        q.options.forEach((opt, i) => {
+    const levelTitle = document.getElementById('level-title');
+    const qText = document.getElementById('q-text');
+    const optContainer = document.getElementById('opt-container');
+    const feedback = document.getElementById('feedback');
+    const nextBtn = document.getElementById('next-btn');
+    const progress = document.getElementById('progress');
+
+    function loadQuestion() {
+        const currentQ = questions[currentIdx];
+        levelTitle.innerText = currentQ.title;
+        qText.innerText = currentQ.q;
+        feedback.style.display = 'none';
+        nextBtn.style.display = 'none';
+        optContainer.innerHTML = '';
+        progress.style.width = ((currentIdx) / questions.length * 100) + "%";
+
+        currentQ.options.forEach((opt, index) => {
             const btn = document.createElement('button');
             btn.innerText = opt;
-            btn.onclick = () => checkAnswer(i);
-            container.appendChild(btn);
+            btn.onclick = () => checkAnswer(index);
+            optContainer.appendChild(btn);
         });
     }
 
-    function checkAnswer(choice) {
-        const q = questions[currentIdx];
-        const feedback = document.getElementById('feedback');
-        const btns = document.querySelectorAll('#opt-container button');
-        
-        btns.forEach(b => b.disabled = true);
+    function checkAnswer(index) {
+        const currentQ = questions[currentIdx];
+        const buttons = optContainer.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
 
-        if(choice === q.correct) {
-            feedback.innerHTML = "✅ <b>Correct!</b> " + q.fact;
+        feedback.style.display = 'block';
+        if (index === currentQ.correct) {
+            feedback.innerHTML = "<b>Correct!</b><br>" + currentQ.fact;
             feedback.className = "correct";
         } else {
-            feedback.innerHTML = "❌ <b>Not quite.</b> " + q.fact;
+            feedback.innerHTML = "<b>Wrong!</b><br>" + currentQ.fact;
             feedback.className = "wrong";
         }
-        document.getElementById('next-btn').
+        nextBtn.style.display = 'inline-block';
+    }
+
+    nextBtn.onclick = () => {
+        currentIdx++;
+        if (currentIdx < questions.length) {
+            loadQuestion();
+        } else {
+            progress.style.width = "100%";
+            document.getElementById('game-box').innerHTML = "<h2>🏆 Mastery Achieved!</h2><p>You've completed the Force and Pressure challenge.</p><button onclick='location.reload()'>Restart Quiz</button>";
+        }
+    };
+
+    // Initialize the first question
+    loadQuestion();
+</script>
+
+</body>
+</html>
