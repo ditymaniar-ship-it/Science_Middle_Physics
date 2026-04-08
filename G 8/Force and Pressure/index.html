@@ -3,314 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pressure Pilot: Grade 8 Physics</title>
+    <title>Pressure Pilot: G8 Force Dynamics</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --accent-blue: #38bdf8;
-            --panel-bg: rgba(30, 41, 59, 0.8);
-            --correct-green: #22c55e;
-            --wrong-red: #ef4444;
+            --bg-deep: #020617;
+            --accent-cyan: #22d3ee;
+            --correct-green: #4ade80;
+            --wrong-red: #f87171;
         }
 
-        body {
-            margin: 0;
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
             font-family: 'Roboto', sans-serif;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            background-color: var(--bg-deep);
             color: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        #game-container {
-            width: 90%;
-            max-width: 700px;
-            background: var(--panel-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            position: relative;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
-            color: var(--accent-blue);
-            margin-bottom: 15px;
-        }
-
-        #progress-wrapper {
-            width: 100%;
-            height: 6px;
-            background: #334155;
-            border-radius: 10px;
-            margin-bottom: 25px;
             overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        #progress-bar {
-            height: 100%;
-            width: 100%;
-            background: var(--accent-blue);
+        /* --- 1. DYNAMIC BACKGROUND --- */
+        #bg-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        /* --- 2. GAME PANEL --- */
+        #game-container {
+            width: 90%; max-width: 700px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            z-index: 10;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .stats-hud {
+            display: flex; justify-content: space-between;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-cyan);
+            margin-bottom: 10px;
+        }
+
+        #timer-bar {
+            width: 100%; height: 6px; background: #1e293b;
+            border-radius: 10px; margin-bottom: 20px; overflow: hidden;
+        }
+
+        #timer-fill {
+            height: 100%; width: 100%; background: var(--accent-cyan);
             transition: width 0.1s linear;
         }
 
-        .scenario-box {
-            margin-bottom: 20px;
+        /* --- 3. QUESTION AREA --- */
+        .q-img {
+            width: 100%; max-height: 180px; object-fit: contain;
+            border-radius: 10px; margin-bottom: 15px; cursor: zoom-in;
+            background: rgba(0,0,0,0.3); border: 1px solid #334155;
+            transition: transform 0.2s;
         }
+        .q-img:hover { transform: scale(1.02); }
 
-        .scenario-text {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            color: #e2e8f0;
-        }
+        .scenario-text { font-size: 1.05rem; line-height: 1.5; color: #e2e8f0; margin-bottom: 10px; }
+        .question-ask { font-weight: bold; font-size: 1.15rem; color: #fff; margin-bottom: 20px; }
 
-        .q-image {
-            width: 100%;
-            max-height: 200px;
-            object-fit: contain;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            background: rgba(0,0,0,0.2);
-            display: none; /* Hidden by default, shown if image exists */
-        }
-
-        .options-grid {
-            display: grid;
-            gap: 12px;
-        }
-
+        .options-grid { display: grid; gap: 10px; }
         .option {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-            font-size: 0.95rem;
+            background: rgba(255,255,255,0.05); padding: 14px; border-radius: 8px;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.2s; font-size: 0.95rem;
         }
+        .option:hover { background: rgba(34, 211, 238, 0.15); border-color: var(--accent-cyan); }
+        .correct { background: var(--correct-green) !important; color: #000 !important; font-weight: bold; }
+        .wrong { background: var(--wrong-red) !important; color: #fff !important; }
 
-        .option:hover {
-            background: rgba(56, 189, 248, 0.1);
-            border-color: var(--accent-blue);
-            transform: translateX(5px);
+        /* --- 4. LIGHTBOX (Enlarge Image) --- */
+        #lightbox {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out;
         }
-
-        .correct { background: var(--correct-green) !important; color: white; }
-        .wrong { background: var(--wrong-red) !important; color: white; }
+        #lightbox img { max-width: 90%; max-height: 90%; border: 2px solid var(--accent-cyan); }
 
         #overlay {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: var(--bg-dark);
-            border-radius: 20px;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            text-align: center;
-        }
-
-        .btn-action {
-            background: var(--accent-blue);
-            color: var(--bg-dark);
-            padding: 12px 30px;
-            border-radius: 5px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
-            margin-top: 20px;
+            display: none; position: absolute; inset: 0; background: #0f172a;
+            border-radius: 20px; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 100; text-align: center;
         }
     </style>
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
+
 <div id="game-container">
-    <div class="stats">
+    <div class="stats-hud">
         <span>SHIELDS: <span id="lives">3</span></span>
         <span>SCORE: <span id="score">0</span></span>
     </div>
-    <div id="progress-wrapper"><div id="progress-bar"></div></div>
+    <div id="timer-bar"><div id="timer-fill"></div></div>
 
-    <div id="content">
-        <div class="scenario-box">
-            <img id="question-img" class="q-image" src="" alt="Experiment Diagram">
-            <p id="scenario-desc" class="scenario-text"></p>
-            <p id="question-ask" style="font-weight: bold; color: var(--accent-blue);"></p>
-        </div>
+    <div id="game-content">
+        <img id="main-img" class="q-img" onclick="enlargeImg(this.src)">
+        <p id="scenario" class="scenario-text"></p>
+        <p id="question" class="question-ask"></p>
         <div id="options" class="options-grid"></div>
     </div>
 
     <div id="overlay">
-        <h1 id="status-title">MISSION OVER</h1>
-        <p id="final-stats"></p>
-        <button class="btn-action" onclick="startGame()">REBOOT SYSTEM</button>
+        <h1 id="status-text" style="font-family: 'Orbitron'; font-size: 2.5rem;"></h1>
+        <p id="final-score" style="font-size: 1.2rem;"></p>
+        <button onclick="startGame()" style="margin-top:20px; padding:12px 30px; cursor:pointer; font-family:'Orbitron'; background:var(--accent-cyan); border:none; border-radius:5px;">RESTART</button>
     </div>
 </div>
 
+<div id="lightbox" onclick="this.style.display='none'">
+    <img id="lightbox-img">
+</div>
+
 <script>
-    const quizData = [
-        {
-            scenario: "An engineering team is designing a 'Desert Explorer' bus for a trek across the Sahara. During testing, a standard city bus immediately got stuck because its thin tires sliced into the sand like a knife. The team replaces them with massive, low-pressure 'balloon' tires that are three times wider.",
-            q: "What is the primary physics reason for this change?",
-            options: ["To increase friction so the bus can climb dunes faster.", "To increase the surface area in contact with the sand to reduce pressure.", "To reduce the total weight of the bus acting on the ground.", "To decrease the surface area so the tires can dig into the sand."],
-            correct: 1,
-            img: null
-        },
-        {
-            scenario: "A carpenter is trying to assemble a chair by hand. He tries to push a flat-ended wooden dowel into a pre-drilled hole, but no matter how hard he pushes, it won't budge. He takes the dowel to a pencil sharpener and creates a sharp point.",
-            q: "Why does the pointed dowel enter the wood easily now?",
-            options: ["The sharpening process increased the total force applied.", "The point reduces friction between the wood and the dowel.", "The smaller surface area at the tip creates a much higher pressure.", "Wood reacts chemically to sharp objects."],
-            correct: 2,
-            img: null
-        },
-        {
-            scenario: "A hiker buys a bag of chips at sea level. After driving up to a mountain peak 3,000 meters high, he notices the bag is so tight it looks like it might pop.",
-            q: "What caused the bag to expand like a balloon?",
-            options: ["The air inside got colder and expanded.", "The bag is air-tight and gravity is stronger on the mountain.", "The external atmospheric pressure decreased, allowing internal air to push out.", "The altitude changed the chemical makeup of the chips."],
-            correct: 2,
-            img: "G 8/Force and Pressure/atmospheric_layers.jpg"
-        },
-        {
-            scenario: "You poke three identical holes into the side of a 2-liter soda bottle: one near the top, one in the middle, and one near the bottom. When filled, the water shoots out in different arcs.",
-            q: "If the bottom hole shoots the farthest, what does this prove?",
-            options: ["Gravity only acts on the bottom of a container.", "Liquid pressure increases as the depth of the liquid increases.", "Air pressure inside the bottle is pushing the bottom water out.", "Liquids are heavier when they are near the ground."],
-            correct: 1,
-            img: "G 8/Force and Pressure/leaky_bottle.jpg"
-        },
-        {
-            scenario: "A person weighing 600 N stands on a soft wooden floor wearing three different types of footwear: Snowshoes (150 cm²), Sneakers (50 cm²), and High Heels (2 cm²).",
-            q: "Which footwear is most likely to dent or damage the wood?",
-            options: ["Snowshoes, because they cover the most wood.", "Sneakers, because they are used for movement.", "High Heels, because they exert the highest pressure due to the tiny area.", "All will cause the same damage because the weight is identical."],
-            correct: 2,
-            img: "G 8/Force and Pressure/footwear_comparison.jpg"
-        },
-        {
-            scenario: "A research team sends a remote-operated vehicle (ROV) to the bottom of the Mariana Trench. A small external camera that wasn't 'pressure-rated' is crushed flat instantly.",
-            q: "Using the principles of liquid pressure, why did the camera fail?",
-            options: ["Salt in the ocean water corroded the camera's casing.", "The water is colder, making the camera brittle.", "The weight of the miles of water above created massive pressure from all directions.", "Deep-sea fish collided with the camera."],
-            correct: 2,
-            img: "G 8/Force and Pressure/underwater_pressure.jpg"
-        },
-        {
-            scenario: "A small force is applied to a small piston in a hydraulic system. This pressure is transmitted through the fluid to a much larger piston.",
-            q: "Why is this system effective at lifting heavy vehicles?",
-            options: ["It creates more energy than it consumes.", "It increases the total volume of the liquid.", "Pressure is the same throughout, so a larger area creates a larger upward force.", "The liquid moves faster on the larger side."],
-            correct: 2,
-            img: "G 8/Force and Pressure/hydraulic_press.jpg"
-        },
-        {
-            scenario: "A performer lies on a bed of 1,000 sharp nails without injury. If he stepped on one nail, it would pierce his foot.",
-            q: "Why is the bed of nails safe to lie on?",
-            options: ["The force of weight is distributed over a very large area, lowering pressure.", "The nails are made of special non-piercing material.", "The performer's weight decreases when lying down.", "The air between nails provides buoyancy."],
-            correct: 0,
-            img: "G 8/Force and Pressure/bed_of_nails.jpg"
+    // --- PARTICLE BACKGROUND SYSTEM ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let particleColor = 'rgba(34, 211, 238, 0.4)';
+
+    function initParticles() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        particles = [];
+        for(let i=0; i<100; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: Math.random() * 2 - 1,
+                vy: Math.random() * 2 - 1,
+                size: Math.random() * 2 + 1
+            });
         }
-    ];
-
-    let currentIdx = 0;
-    let score = 0;
-    let lives = 3;
-    let timer;
-    let timeLeft = 250; // 25 seconds * 10
-
-    function startGame() {
-        currentIdx = 0;
-        score = 0;
-        lives = 3;
-        document.getElementById('overlay').style.display = 'none';
-        updateStats();
-        showQuestion();
     }
 
-    function updateStats() {
-        document.getElementById('score').innerText = score;
-        document.getElementById('lives').innerText = "❤️".repeat(lives);
-    }
-
-    function showQuestion() {
-        if (currentIdx >= quizData.length) return end(true);
-        
-        const data = quizData[currentIdx];
-        document.getElementById('scenario-desc').innerText = data.scenario;
-        document.getElementById('question-ask').innerText = data.q;
-        
-        const imgEl = document.getElementById('question-img');
-        if (data.img) {
-            imgEl.src = data.img;
-            imgEl.style.display = 'block';
-        } else {
-            imgEl.style.display = 'none';
-        }
-
-        const optionsBox = document.getElementById('options');
-        optionsBox.innerHTML = '';
-        data.options.forEach((opt, i) => {
-            const div = document.createElement('div');
-            div.className = 'option';
-            div.innerText = opt;
-            div.onclick = () => check(i);
-            optionsBox.appendChild(div);
-        });
-
-        resetTimer();
-    }
-
-    function resetTimer() {
-        clearInterval(timer);
-        timeLeft = 250;
-        timer = setInterval(() => {
-            timeLeft--;
-            document.getElementById('progress-bar').style.width = (timeLeft / 2.5) + '%';
-            if (timeLeft <= 0) {
-                lives--;
-                next();
-            }
-        }, 100);
-    }
-
-    function check(i) {
-        clearInterval(timer);
-        const options = document.getElementsByClassName('option');
-        if (i === quizData[currentIdx].correct) {
-            options[i].classList.add('correct');
-            score += 100 + Math.floor(timeLeft/2);
-        } else {
-            options[i].classList.add('wrong');
-            options[quizData[currentIdx].correct].classList.add('correct');
-            lives--;
-        }
-        updateStats();
-        setTimeout(next, 2000);
-    }
-
-    function next() {
-        if (lives <= 0) return end(false);
-        currentIdx++;
-        if (currentIdx < quizData.length) showQuestion();
-        else end(true);
-    }
-
-    function end(win) {
-        document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('status-title').innerText = win ? "MISSION COMPLETE" : "SYSTEM FAILURE";
-        document.getElementById('final-stats').innerText = `Final Score: ${score}`;
-    }
-
-    startGame();
-</script>
-
-</body>
-</html>
+    function drawParticles() {
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = particleColor;
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0,
